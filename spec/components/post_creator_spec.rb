@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'post_creator'
+require 'topic_subtype'
 
 describe PostCreator do
 
@@ -145,6 +146,7 @@ describe PostCreator do
 
   end
 
+  # more integration testing ... maximise our testing
   context 'existing topic' do
     let!(:topic) { Fabricate(:topic, user: user) }
     let(:creator) { PostCreator.new(user, raw: 'test reply', topic_id: topic.id, reply_to_post_number: 4) }
@@ -155,40 +157,38 @@ describe PostCreator do
     end
 
     context 'success' do
-      it 'should create the post' do
-        lambda { creator.create }.should change(Post, :count).by(1)
+      it 'create correctly' do
+        post = creator.create
+        Post.count.should == 1
+        Topic.count.should == 1
+        post.reply_to_post_number.should == 4
       end
 
-      it "doesn't create a topic" do
-        lambda { creator.create }.should_not change(Topic, :count)
-      end
-
-      it "passes through the reply_to_post_number" do
-        creator.create.reply_to_post_number.should == 4
-      end
     end
 
   end
 
+  # integration test ... minimise db work
   context 'private message' do
     let(:target_user1) { Fabricate(:coding_horror) }
     let(:target_user2) { Fabricate(:moderator) }
+    let(:unrelated) { Fabricate(:user) }
     let(:post) do
       PostCreator.create(user, title: 'hi there welcome to my topic',
-                               raw: 'this is my awesome message',
+                               raw: "this is my awesome message @#{unrelated.username_lower}",
                                archetype: Archetype.private_message,
                                target_usernames: [target_user1.username, target_user2.username].join(','))
     end
 
-    it 'has the right archetype' do
+    it 'acts correctly' do
       post.topic.archetype.should == Archetype.private_message
-    end
-
-    it 'has the right count (me and 2 other users)' do
       post.topic.topic_allowed_users.count.should == 3
+
+      # does not notify an unrelated user
+      unrelated.notifications.count.should == 0
+      post.topic.subtype.should == TopicSubtype.user_to_user
     end
   end
-
 
 end
 

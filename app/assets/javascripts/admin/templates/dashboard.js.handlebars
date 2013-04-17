@@ -3,17 +3,34 @@
     <div class="dashboard-stats detected-problems">
       <div class="look-here"><i class="icon icon-warning-sign"></i></div>
       <div class="problem-messages">
-        <p>
+        <p {{bindAttr class="loadingProblems:invisible"}}>
           {{i18n admin.dashboard.problems_found}}
-          <ul>
+          <ul {{bindAttr class="loadingProblems:invisible"}}>
             {{#each problem in problems}}
               <li>{{{problem}}}</li>
             {{/each}}
           </ul>
         </p>
+        <p class="actions">
+          <small>{{i18n admin.dashboard.last_checked}}: {{problemsTimestamp}}</small>
+          <button {{action loadProblems}} class="btn btn-small"><i class="icon icon-refresh"></i>{{i18n admin.dashboard.refresh_problems}}</button>
+        </p>
       </div>
       <div class="clearfix"></div>
     </div>
+  {{else}}
+    {{#if thereWereProblems}}
+      <div class="dashboard-stats detected-problems">
+        <div class="look-here">&nbsp;</div>
+        <div class="problem-messages">
+          <p>
+            {{i18n admin.dashboard.no_problems}}
+            <button {{action loadProblems}} class="btn btn-small"><i class="icon icon-refresh"></i>{{i18n admin.dashboard.refresh_problems}}</button>
+          </p>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+    {{/if}}
   {{/if}}
 
   {{#if Discourse.SiteSettings.version_checks}}
@@ -113,7 +130,28 @@
         {{ render 'admin_report_counts' likes }}
         {{ render 'admin_report_counts' flags }}
         {{ render 'admin_report_counts' emails }}
-        {{ render 'admin_report_counts' private_messages }}
+      {{/unless}}
+    </table>
+  </div>
+
+  <div class="dashboard-stats">
+    <table class="table table-condensed table-hover">
+      <thead>
+        <tr>
+          <th class="title" title="{{i18n admin.dashboard.private_messages_title}}"><i class="icon icon-envelope-alt"></i> {{i18n admin.dashboard.private_messages_short}}</th>
+          <th>{{i18n admin.dashboard.reports.today}}</th>
+          <th>{{i18n admin.dashboard.reports.yesterday}}</th>
+          <th>{{i18n admin.dashboard.reports.last_7_days}}</th>
+          <th>{{i18n admin.dashboard.reports.last_30_days}}</th>
+          <th>{{i18n admin.dashboard.reports.all}}</th>
+        </tr>
+      </thead>
+      {{#unless loading}}
+        {{ render 'admin_report_counts' user_to_user_private_messages }}
+        {{ render 'admin_report_counts' system_private_messages }}
+        {{ render 'admin_report_counts' notify_moderators_private_messages }}
+        {{ render 'admin_report_counts' notify_user_private_messages }}
+        {{ render 'admin_report_counts' moderator_warning_private_messages }}
       {{/unless}}
     </table>
   </div>

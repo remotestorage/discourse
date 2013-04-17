@@ -509,6 +509,7 @@ en:
 
       invite_reply:
         title: 'Invite Friends to Reply'
+        action: 'Email Invite'
         help: 'send invitations to friends so they can reply to this topic with a single click'
         email: "We'll send your friend a brief email allowing them to reply to this topic by clicking a link."
         email_placeholder: 'email address'
@@ -714,7 +715,7 @@ en:
       delete_error: "There was an error deleting the category."
       list: "List Categories"
       no_description: "There is no description for this category."
-      change_in_category_topic: "visit category topic to edit the description"
+      change_in_category_topic: "Edit Description"
       hotness: "Hotness"
       already_used: 'This color has been used by another category'
 
@@ -816,10 +817,14 @@ en:
         please_upgrade: "Please upgrade!"
         installed_version: "Installed"
         latest_version: "Latest"
-        update_often: 'Please update often!'
         problems_found: "Some problems have been found with your installation of Discourse:"
+        last_checked: "Last checked"
+        refresh_problems: "Refresh"
+        no_problems: "No problems were found."
         moderators: 'Moderators:'
         admins: 'Admins:'
+        private_messages_short: "PMs"
+        private_messages_title: "Private Messages"
 
         reports:
           today: "Today"
@@ -834,7 +839,7 @@ en:
           view_chart: "View as Bar Chart"
 
       commits:
-        latest_changes: "Latest changes."
+        latest_changes: "Latest changes: please update often!"
         by: "by"
 
       flags:
