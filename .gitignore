@@ -79,3 +79,6 @@ config/version.rb
 
 # ignore the Ruby Version manager (rvm) file
 .rvmrc
+
+# ignore ctags file
+gems.tags
