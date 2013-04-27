@@ -52,7 +52,7 @@ gem "omniauth-twitter"
 gem "omniauth-github"
 gem "omniauth-browserid", :git => "git://github.com/callahad/omniauth-browserid.git", :branch => "observer_api"
 gem 'oj'
-gem 'pg'
+gem 'pg', '0.15.1'
 # we had pain with the 3.2.13 upgrade so monkey patch the security fix
 # next time around we hope to upgrade
 gem 'rails', '3.2.12'

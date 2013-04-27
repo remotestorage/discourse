@@ -125,6 +125,7 @@ GEM
     airbrake (3.1.2)
       activesupport
       builder
+    archive-tar-minitar (0.5.2)
     arel (3.0.2)
     barber (0.3.0)
       execjs
@@ -139,6 +140,20 @@ GEM
     celluloid (0.13.0)
       timers (>= 1.0.0)
     certified (0.1.1)
+    chef (11.4.4)
+      erubis
+      highline (>= 1.6.9)
+      json (>= 1.4.4, <= 1.7.7)
+      mixlib-authentication (>= 1.3.0)
+      mixlib-cli (~> 1.3.0)
+      mixlib-config (>= 1.1.2)
+      mixlib-log (>= 1.3.0)
+      mixlib-shellout
+      net-ssh (~> 2.6)
+      net-ssh-multi (~> 1.1.0)
+      ohai (>= 0.6.0)
+      rest-client (>= 1.0.4, < 1.7.0)
+      yajl-ruby (~> 1.1)
     childprocess (0.3.9)
       ffi (~> 1.0, >= 1.0.11)
     clockwork (0.5.0)
@@ -223,6 +238,7 @@ GEM
     image_size (1.1.2)
     image_sorcery (1.1.0)
     in_threads (1.1.1)
+    ipaddress (0.8.0)
     jasminerice (0.0.10)
       coffee-rails
       haml
@@ -252,6 +268,12 @@ GEM
     method_source (0.8.1)
     mime-types (1.23)
     minitest (4.7.3)
+    mixlib-authentication (1.3.0)
+      mixlib-log
+    mixlib-cli (1.3.0)
+    mixlib-config (1.1.2)
+    mixlib-log (1.6.0)
+    mixlib-shellout (1.1.0)
     mocha (0.13.3)
       metaclass (~> 0.0.1)
     multi_json (1.7.2)
@@ -260,6 +282,11 @@ GEM
     net-scp (1.1.0)
       net-ssh (>= 2.6.5)
     net-ssh (2.6.7)
+    net-ssh-gateway (1.2.0)
+      net-ssh (>= 2.6.5)
+    net-ssh-multi (1.1)
+      net-ssh (>= 2.1.4)
+      net-ssh-gateway (>= 0.99.0)
     nokogiri (1.5.9)
     oauth (0.4.7)
     oauth2 (0.8.1)
@@ -268,6 +295,14 @@ GEM
       jwt (~> 0.1.4)
       multi_json (~> 1.0)
       rack (~> 1.2)
+    ohai (6.16.0)
+      ipaddress
+      mixlib-cli
+      mixlib-config
+      mixlib-log
+      mixlib-shellout
+      systemu
+      yajl-ruby
     oj (2.0.11)
     omniauth (1.1.4)
       hashie (>= 1.2, < 3)
@@ -293,10 +328,7 @@ GEM
       redis
       ruby-openid
     pg (0.15.1)
-<<<<<<< HEAD
-=======
     pg-hstore (1.1.7)
->>>>>>> master
     polyglot (0.3.3)
     progress (2.4.0)
     pry (0.9.12.1)
@@ -425,6 +457,7 @@ GEM
       tilt (~> 1.3.3)
     slop (3.4.4)
     spork (0.9.2)
+    systemu (2.5.2)
     temple (0.6.4)
     terminal-notifier-guard (1.5.3)
     therubyracer (0.11.4)
@@ -447,14 +480,11 @@ GEM
     uglifier (2.0.1)
       execjs (>= 0.3.0)
       multi_json (~> 1.0, >= 1.0.2)
-<<<<<<< HEAD
     unicorn (4.5.0)
       kgio (~> 2.6)
       rack
       raindrops (~> 0.7)
     yajl-ruby (1.1.0)
-=======
->>>>>>> master
 
 PLATFORMS
   ruby
@@ -510,7 +540,7 @@ DEPENDENCIES
   omniauth-openid
   omniauth-twitter
   openid-redis-store
-  pg (~> 0.15.1)
+  pg (= 0.15.1)
   pry-rails
   rack-cache
   rack-cors
