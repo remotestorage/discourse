@@ -27,6 +27,7 @@ Discourse::Application.configure do
   # the I18n.default_locale when a translation can not be found)
   config.i18n.fallbacks = true
 
+
   # you may use other configuration here for mail eg: sendgrid
 
   # config.action_mailer.delivery_method = :smtp
@@ -52,9 +53,17 @@ Discourse::Application.configure do
   config.enable_rack_cache = true
 
   # allows admins to use mini profiler
-  config.enable_mini_profiler = true
+  config.enable_mini_profiler = false
+
+  # allows Cross-origin resource sharing (CORS) for API access in JavaScript (default to false for security).
+  # See the initializer and https://github.com/cyu/rack-cors for configuration documentation.
+  #
+  # config.enable_rack_cors = false
+  # config.rack_cors_origins = ['*']
+  # config.rack_cors_resource = ['*', { :headers => :any, :methods => [:get, :post, :options] }]
 
   # Discourse strongly recommend you use a CDN.
   # For origin pull cdns all you need to do is register an account and configure
   # config.action_controller.asset_host = "http://YOUR_CDN_HERE"
+
 end
