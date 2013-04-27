@@ -13,6 +13,7 @@ fr:
 
   title: "Discourse"
   topics: "Discussions"
+  posts: "messages"
   loading: "Chargement"
   powered_by_html: 'Propulsé par <a href="http://www.discourse.org">Discourse</a>, best viewed with JavaScript enabled'
 
@@ -26,7 +27,7 @@ fr:
     zero: "Désolé, vous ne pouvez pas mentionner d'utilisateur."
     one: "Désolé, vous ne pouvez mentionner qu'un seul utilisateur."
     other: "Désolé, vous ne pouvez mentionner que %{count} utilisateur."
-  too_many_mentions_visitor:
+  too_many_mentions_newuser:
     zero: "Désolé, les visiteurs ne peuvent pas mentionner d'utilisateur."
     one: "Désolé, les visiteurs ne peuvent mentionner qu'un seul utilisateur."
     other: "Désolé, les visiteurs ne peuvent mentionner que %{count} utilisateur."
@@ -107,7 +108,7 @@ fr:
     post_template: "%{replace_paragraph}\n\nUtilisez l'espace ci-dessous pour une plus longue description, voire pour établir des règles."
 
   trust_levels:
-    visitor:
+    newuser:
       title: "visiteur"
     basic:
       title: "utilisateur basique"
@@ -249,9 +250,9 @@ fr:
       email_title: 'A propos de "%{title}"'
       email_body: "%{link}\n\n%{message}"
     bookmark:
-      title: 'Favoris'
-      description: 'Ajouter aux favoris'
-      long_form: 'ajouté aux favoris'
+      title: 'Signets'
+      description: 'Ajouter aux signets'
+      long_form: 'ajouté aux signets'
     like:
       title: "J'aime"
       description: 'Aimer ce message'
@@ -306,6 +307,14 @@ fr:
       title: Nouveaux Signalements
       xaxis: Jour
       yaxis: Nombre de signalements
+    bookmarks:
+      title: Signets
+      xaxis: Jour
+      yaxis: Nombre de nouveaux signets
+    favorites:
+      title: Favoris
+      xaxis: Jour
+      yaxis: Nombre de nouveaux favoris
     users_by_trust_level:
       title: Utilisateurs par niveau de confiance
       xaxis: Niveau de confiance
@@ -341,10 +350,15 @@ fr:
     gc_warning: "Votre serveur utilise les paramètres par défaut de collection du GC de ruby, ce qui ne vous donneras pas les meilleures performances. Merci de lire cette discussion sur <a href=\"http://meta.discourse.org/t/tuning-ruby-and-rails-for-discourse/4126\">l'optimisation des performances de Ruby et Rails pour Discourse [EN]</a>."
     clockwork_warning: "Clockwork n'est pas lancé. Assurez-vous qu'un processus clockwork soit toujours lancé afin que les tâches importantes soient planifiées. <a href=\"https://github.com/tomykaira/clockwork\">En savoir plus sur clockwork [EN]</a>."
     sidekiq_warning: "Sidekiq n'est pas lancé. De nombreuses tâches, comme l'envoie d'e-mails, sont executées de manière asynchrome par sidekiq. Assurez-vous d'avoir au moins un processus sidekiq de lancé. <a href=\"https://github.com/mperham/sidekiq\">En savoir plus sur sidekiq [EN]</a>."
+    queue_size_warning: "Il y a %{queue_size} tâches dans la file d'attente, ce qui est beaucoup. Cela peut provenir d'un problème avec les processus Sidekiq, ou à un manque de processus Sidekiq travailleurs."
     memory_warning: "Votre serveur dispose de moins de 1 Go de mémoire vive. Au moins 1 Go de RAM est recommandé."
     facebook_config_warning: "Le serveur est configuré pour permettre l'authentification par Facebook (enable_facebook_logins), mais les paramètres facebook_app_id et facebook_app_secret ne sont pas renseignés. Vous pouvez modifier ces paramètres dans <a href=\"/admin/site_settings\">l'interface d'administration</a>."
     twitter_config_warning: "Le serveur est configuré pour permettre l'authentification par Twitter (enable_twitter_logins), mais les paramètres twitter_consumer_key et twitter_consumer_secret ne sont pas renseignés. Vous pouvez modifier ces paramètres dans <a href=\"/admin/site_settings\">l'interface d'administration</a>."
     github_config_warning: "Le serveur est configuré pour permettre l'authentification par GitHub (enable_github_logins), mais les paramètres github_client_id et github_client_secret ne sont pas renseignés. Vous pouvez modifier ces paramètres dans <a href=\"/admin/site_settings\">l'interface d'administration</a>."
+    failing_emails_warning: "Il y a %{num_failed_jobs} tâches d'envois d'email en erreur. Vérifiez votre fichier config/production.rb et assurez-vous de la conformité des paramètres du config.action_mailer"
+    default_logo_warning: "Vous n'avez pas changé le logo de votre site. Merci de mettre à jour les <a href='/admin/site_settings'>paramètres du site</a> suivant : logo_url, logo_small_url et favicon_url."
+    contact_email_missing: "Vous n'avez pas renseigné d'email de contact pour votre site. Merci de mettre à jour le <a href='/admin/site_settings'>paramètre de site</a> : contact_email."
+    contact_email_invalid: "L'email de contact du site est invalide. Merci de mettre à jour le <a href='/admin/site_settings'>paramètre de site</a> : contact_email."
 
   content_types:
     education_new_reply:
@@ -382,6 +396,7 @@ fr:
     discourse_org_access_key: "La clé d'accès utilisée pour le registre de pseudos de discourse.org"
     educate_until_posts: "Afficher les aides à la saisie tant que l'utilisateur n'a pas posté ce nombre de messages"
     title: "titre de ce site internet"
+    contact_email: "L'adresse e-mail de la personne responsable techniquement du site. Les notifications importantes de Discourse.org concernant les mises à jour critiques seront envoyées à cette adresse."
     company_full_name: "Le nom complet de la société qui gère ce site (utilisé dans les documents légaux, tels que /tos)"
     company_short_name: "Le nom de la société qui gère ce site (utilisé dans les documents légaux, tels que /tos)"
     company_domain: "Le nom de domaine de la société qui gère ce site (utilisé dans les documents légaux, tels que /tos)"
@@ -474,9 +489,9 @@ fr:
     previous_visit_timeout_hours: "Combien de temps dure une visite avant de la considérer comme la visite 'précédente', en heures."
 
     uncategorized_name: "Nom pour les discussions sans catégorie dans la liste des catégories"
-    visitor_max_links: "Nombre maximum de liens qu'un visiteur peut ajouter à un message"
-    visitor_max_images: "Nombre maximum d'images qu'un visiteur peut ajouter à un message"
-    visitor_max_mentions_per_post: "Nombre maximum de référence à un @utilisateur qu'un visiteur peut ajouter à un message"
+    newuser_max_links: "Nombre maximum de liens qu'un visiteur peut ajouter à un message"
+    newuser_max_images: "Nombre maximum d'images qu'un visiteur peut ajouter à un message"
+    newuser_max_mentions_per_post: "Nombre maximum de référence à un @utilisateur qu'un visiteur peut ajouter à un message"
     max_mentions_per_post: "Le nombre maximal de @mentions que vous pouvez ajouter à un message"
 
     rate_limit_create_topic: "Combien de secondes avant de pouvoir démarrer une nouvelle discussion"
@@ -484,9 +499,9 @@ fr:
 
     max_likes_per_day: "Quantité maximale  de J'aime qu'un utilisateur peut effectuer en un jour"
     max_flags_per_day: "Quantité maximale de signalements qu'un utilisateur peut effectuer en un jour"
-    max_bookmarks_per_day: "Quantité maximale de favoris qu'un utilisateur peut ajouter en un jour"
+    max_bookmarks_per_day: "Quantité maximale de signets qu'un utilisateur peut ajouter en un jour"
     max_edits_per_day: "Quantité maximale de modifications qu'un utilisateur peut effectuer en un jour"
-    max_favorites_per_day: "Quantité maximale de disscussions  pouvant être mises en favoris en un jour"
+    max_favorites_per_day: "Quantité maximale de disscussions pouvant être mises en favoris en un jour"
     max_topics_per_day: "Quantité maximale de discussions que vous pouvez créer en un jour"
     max_private_messages_per_day: "Quantité maximale de messages privés que vous pouvez envoyer en un jour"
 
@@ -528,6 +543,10 @@ fr:
 
     title_prettify: "Corrige les coquilles les plus communes dans les titres (intégralité du titre en majuscule, première lettre en minuscule, de multiples ! et ?, un . inutile à la fin, etc.)"
 
+    topic_views_heat_low: "Le nombre de vues à partir duquel le niveau d'intensité de la discussion est : faible."
+    topic_views_heat_medium: "Le nombre de vues à partir duquel le niveau d'intensité de la discussion est : moyen."
+    topic_views_heat_high: "Le nombre de vues à partir duquel le niveau d'intensité de la discussion est : élevé."
+
   notification_types:
     mentioned: "%{display_username} vous a mentionné dans %{link}"
     liked: "%{display_username} a aimé votre message dans %{link}"
@@ -552,7 +571,7 @@ fr:
   frequent_poster: "Auteur frequent"
 
   user_action_descriptions:
-    bookmarks: "Bookmarks"
+    bookmarks: "Signets"
     topics: "Discussions"
     likes_received: "J'aime reçus"
     likes_given: "J'aime donnés"
@@ -568,7 +587,7 @@ fr:
 
     was_liked: "a été aimé"
     liked: "aimé"
-    bookmarked: "bookmarké"
+    bookmarked: "ajouté aux signets"
     posted: "posté"
     responded_to: "réponse_à"
     mentioned: "mentionné"

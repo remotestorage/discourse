@@ -22,7 +22,6 @@ class TopicsController < ApplicationController
   skip_before_filter :check_xhr, only: [:avatar, :show, :feed]
   caches_action :avatar, cache_path: Proc.new {|c| "#{c.params[:post_number]}-#{c.params[:topic_id]}" }
 
-
   def show
     create_topic_view
 

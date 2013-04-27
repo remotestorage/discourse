@@ -48,7 +48,6 @@ id:
       "6": "Jawaban-jawaban"
 
     user:
-      information: "Informasi pengguna"
       profile: "Profil"
       title: "Pengguna"
       mute: "Diamkan"
@@ -502,7 +501,7 @@ id:
         reply: "begin composing a reply to this post"
         like: "like this post"
         edit: "edit this post"
-        flag: "flag this post for moderator attention"
+        flag: "flag this post or send a notification about this post"
         delete: "delete this post"
         undelete: "undelete this post"
         share: "share a link to this post"
@@ -635,7 +634,7 @@ id:
       title: 'Discourse Admin'
 
       dashboard:
-        title: "Admin Dashboard"
+        title: "Dashboard"
         version: "Installed version"
         up_to_date: "You are running the latest version of Discourse."
         critical_available: "A critical update is available."
@@ -712,7 +711,6 @@ id:
         grant_admin: 'Grant Admin'
         revoke_moderation: 'Revoke Moderation'
         grant_moderation: 'Grant Moderation'
-        basics: Basics
         reputation: Reputation
         permissions: Permissions
         activity: Activity

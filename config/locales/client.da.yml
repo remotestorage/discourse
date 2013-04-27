@@ -49,7 +49,6 @@ da:
       "6": "Svar"
 
     user:
-      information: "Brugeroplysninger"
       profile: Profil
       title: "Bruger"
       mute: Mute
@@ -684,7 +683,7 @@ da:
       title: 'Discourse Admin'
 
       dashboard:
-        title: "Admin Dashboard"
+        title: "Dashboard"
         version: "Installed version"
         up_to_date: "You are running the latest version of Discourse."
         critical_available: "A critical update is available."
@@ -779,7 +778,6 @@ da:
         grant_admin: 'Grant Admin'
         revoke_moderation: 'Revoke Moderation'
         grant_moderation: 'Grant Moderation'
-        basics: Basics
         reputation: Reputation
         permissions: Permissions
         activity: Activity

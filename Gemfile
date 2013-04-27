@@ -6,7 +6,12 @@ end
 source 'https://rubygems.org'
 
 gem 'active_model_serializers', git: 'git://github.com/rails-api/active_model_serializers.git'
-gem 'ember-rails', git: 'git://github.com/emberjs/ember-rails.git' # so we get the pre version
+
+# we had issues with latest, stick to the rev till we figure this out
+# PR that makes it all hang together welcome
+gem 'ember-rails', git: 'git://github.com/emberjs/ember-rails.git', ref: '57bbe32'
+gem 'barber', '0.3.0'
+
 gem 'vestal_versions', git: 'git://github.com/zhangyuan/vestal_versions'
 
 gem 'message_bus', path: 'vendor/gems/message_bus'
@@ -22,7 +27,7 @@ gem 'clockwork', require: false
 gem 'em-redis'
 gem 'eventmachine'
 gem 'fast_xs'
-gem 'fast_xor'
+gem 'fast_xor', git: 'git://github.com/CodeMonkeySteve/fast_xor.git'
 gem 'fastimage'
 gem 'fog', require: false
 gem 'has_ip_address'
@@ -34,8 +39,8 @@ gem 'image_optim'
 # note: for image_sorcery to correctly work you need
 # sudo apt-get install -y imagemagick
 gem 'image_sorcery'
+# it patches stuff, I think we need it in prd
 gem 'jquery-rails'
-gem 'minitest'
 gem 'multi_json'
 gem 'mustache'
 gem 'nokogiri'
@@ -47,8 +52,10 @@ gem "omniauth-twitter"
 gem "omniauth-github"
 gem "omniauth-browserid", :git => "git://github.com/callahad/omniauth-browserid.git", :branch => "observer_api"
 gem 'oj'
-gem 'pg', '~> 0.15.1'
-gem 'rails'
+gem 'pg'
+# we had pain with the 3.2.13 upgrade so monkey patch the security fix
+# next time around we hope to upgrade
+gem 'rails', '3.2.12'
 gem 'rake'
 gem 'redis'
 gem 'redis-rails'
@@ -85,7 +92,8 @@ group :assets do
 end
 
 group :test do
-  gem "fakeweb", "~> 1.3.0"
+  gem 'fakeweb', '~> 1.3.0'
+  gem 'minitest'
 end
 
 group :test, :development do
@@ -99,7 +107,7 @@ group :test, :development do
   gem 'jasminerice'
   gem 'mocha', require: false
   gem 'rb-fsevent'
-  gem 'rb-inotify', '~> 0.8.8', require: RUBY_PLATFORM.include?('linux') && 'rb-inotify'
+  gem 'rb-inotify', '~> 0.9', require: RUBY_PLATFORM.include?('linux') && 'rb-inotify'
   gem 'rspec-rails'
   gem 'shoulda'
   gem 'simplecov', require: false
@@ -113,10 +121,18 @@ group :development do
   gem 'pry-rails'
 end
 
+# we are using a custom sprockets repo to work around: https://github.com/rails/rails/issues/8099#issuecomment-16137638
+# REVIEW EVERY RELEASE
+gem "sprockets", :git => "git://github.com/SamSaffron/sprockets.git", :branch => "rails-compat"
+
+
 # this is an optional gem, it provides a high performance replacement
 # to String#blank? a method that is called quite frequently in current
 # ActiveRecord, this may change in the future
 gem 'fast_blank' #, github: "SamSaffron/fast_blank"
+
+# this provides a very efficient lru cache
+gem 'lru_redux'
 
 # IMPORTANT: mini profiler monkey patches, so it better be required last
 #  If you want to amend mini profiler to do the monkey patches in the railstie
@@ -126,6 +142,8 @@ gem 'rack-mini-profiler', require: false  # require: false #, git: 'git://github
 # used for caching, optional
 gem 'redis-rack-cache', require: false
 gem 'rack-cache', require: false
+
+gem 'rack-cors', require: false
 
 # perftools only works on 1.9 atm
 group :profile do

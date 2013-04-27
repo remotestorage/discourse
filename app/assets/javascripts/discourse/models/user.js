@@ -25,7 +25,7 @@ Discourse.User = Discourse.Model.extend({
     @type {String}
   **/
   avatarSmall: (function() {
-  return Discourse.Utilities.avatarUrl(this.get('username'), 'small', this.get('avatar_template'));
+    return Discourse.Utilities.avatarUrl(this.get('username'), 'small', this.get('avatar_template'));
   }).property('username'),
 
   /**
@@ -34,9 +34,13 @@ Discourse.User = Discourse.Model.extend({
     @property websiteName
     @type {String}
   **/
-  websiteName: (function() {
+  websiteName: function() {
     return this.get('website').split("/")[2];
-  }).property('website'),
+  }.property('website'),
+
+  hasWebsite: function() {
+    return this.present('website');
+  }.property('website'),
 
   /**
     Path to this user.
@@ -162,7 +166,7 @@ Discourse.User = Discourse.Model.extend({
     return Discourse.ajax(Discourse.getURL("/session/forgot_password"), {
       dataType: 'json',
       data: {
-        username: this.get('username')
+        login: this.get('username')
       },
       type: 'POST'
     });
@@ -334,6 +338,7 @@ Discourse.User = Discourse.Model.extend({
 
   onDetailsLoaded: function(callback){
     var _this = this;
+    this.set("loading",false);
 
     if(callback){
       this.onDetailsLoadedCallbacks = this.onDetailsLoadedCallbacks || [];
@@ -353,6 +358,7 @@ Discourse.User = Discourse.Model.extend({
   **/
   loadDetails: function() {
 
+    this.set("loading",true);
     // Check the preload store first
     var user = this;
     var username = this.get('username');
@@ -364,6 +370,7 @@ Discourse.User = Discourse.Model.extend({
         var stat = Em.Object.create(s);
         stat.set('isPM', stat.get('action_type') === Discourse.UserAction.NEW_PRIVATE_MESSAGE ||
                          stat.get('action_type') === Discourse.UserAction.GOT_PRIVATE_MESSAGE);
+        stat.set('description', Em.String.i18n('user_action_groups.' + stat.get('action_type')));
         return stat;
       }));
 
@@ -423,7 +430,7 @@ Discourse.User.reopenClass({
           found = true;
           if (!g[k]) {
             g[k] = Em.Object.create({
-              description: Em.String.i18n("user_action_descriptions." + k),
+              description: Em.String.i18n("user_action_groups." + k),
               count: 0,
               action_type: parseInt(k, 10)
             });

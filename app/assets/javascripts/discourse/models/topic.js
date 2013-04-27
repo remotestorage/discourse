@@ -30,19 +30,24 @@ Discourse.Topic = Discourse.Model.extend({
     }
   },
 
-  category: (function() {
+  category: function() {
     if (this.get('categories')) {
       return this.get('categories').findProperty('name', this.get('categoryName'));
     }
-  }).property('categoryName', 'categories'),
+  }.property('categoryName', 'categories'),
 
-  url: (function() {
+  shareUrl: function(){
+    var user = Discourse.get('currentUser');
+    return this.get('url') + (user ? '?u=' + user.get('username_lower') : '');
+  }.property('url'),
+
+  url: function() {
     var slug = this.get('slug');
     if (slug.isBlank()) {
       slug = "topic";
     }
     return Discourse.getURL("/t/") + slug + "/" + (this.get('id'));
-  }).property('id', 'slug'),
+  }.property('id', 'slug'),
 
   // Helper to build a Url with a post number
   urlForPostNumber: function(postNumber) {
@@ -53,20 +58,20 @@ Discourse.Topic = Discourse.Model.extend({
     return url;
   },
 
-  lastReadUrl: (function() {
+  lastReadUrl: function() {
     return this.urlForPostNumber(this.get('last_read_post_number'));
-  }).property('url', 'last_read_post_number'),
+  }.property('url', 'last_read_post_number'),
 
-  lastPostUrl: (function() {
+  lastPostUrl: function() {
     return this.urlForPostNumber(this.get('highest_post_number'));
-  }).property('url', 'highest_post_number'),
+  }.property('url', 'highest_post_number'),
 
   // The last post in the topic
   lastPost: function() {
     return this.get('posts').last();
   },
 
-  postsChanged: (function() {
+  postsChanged: function() {
     var last, posts;
     posts = this.get('posts');
     last = posts.last();
@@ -76,12 +81,12 @@ Discourse.Topic = Discourse.Model.extend({
     });
     last.set('lastPost', true);
     return true;
-  }).observes('posts.@each', 'posts'),
+  }.observes('posts.@each', 'posts'),
 
   // The amount of new posts to display. It might be different than what the server
   // tells us if we are still asynchronously flushing our "recently read" data.
   // So take what the browser has seen into consideration.
-  displayNewPosts: (function() {
+  displayNewPosts: function() {
     var delta, highestSeen, result;
     if (highestSeen = Discourse.get('highestSeenByTopic')[this.get('id')]) {
       delta = highestSeen - this.get('last_read_post_number');
@@ -94,10 +99,10 @@ Discourse.Topic = Discourse.Model.extend({
       }
     }
     return this.get('new_posts');
-  }).property('new_posts', 'id'),
+  }.property('new_posts', 'id'),
 
   // The coldmap class for the age of the topic
-  ageCold: (function() {
+  ageCold: function() {
     var createdAt, createdAtDays, daysSinceEpoch, lastPost, nowDays;
     if (!(lastPost = this.get('last_posted_at'))) return;
     if (!(createdAt = this.get('created_at'))) return;
@@ -115,7 +120,15 @@ Discourse.Topic = Discourse.Model.extend({
       if (createdAtDays < nowDays - 14) return 'coldmap-low';
     }
     return null;
-  }).property('age', 'created_at'),
+  }.property('age', 'created_at'),
+
+  viewsHeat: function() {
+    var v = this.get('views');
+    if( v >= Discourse.SiteSettings.topic_views_heat_high )   return 'heatmap-high';
+    if( v >= Discourse.SiteSettings.topic_views_heat_medium ) return 'heatmap-med';
+    if( v >= Discourse.SiteSettings.topic_views_heat_low )    return 'heatmap-low';
+    return null;
+  }.property('views'),
 
   archetypeObject: (function() {
     return Discourse.get('site.archetypes').findProperty('id', this.get('archetype'));

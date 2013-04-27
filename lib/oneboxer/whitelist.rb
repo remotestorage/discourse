@@ -45,7 +45,6 @@ module Oneboxer
        Entry.new(/^https?:\/\/(?:www\.)?samsung\.com\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?mashable\.com\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?forbes\.com\/.+/),
-       Entry.new(/^https?:\/\/(?:www\.)?soundcloud\.com\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?thefreedictionary\.com\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?groupon\.com\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?ikea\.com\/.+/),
@@ -74,6 +73,7 @@ module Oneboxer
        Entry.new(/^https?:\/\/(?:www\.)?thinkgeek\.com\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?theonion\.com\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?tumblr\.com\/.+/, false),
+       Entry.new(/^https?:\/\/(?:www\.)?howtogeek\.com\/.+/, false),
        Entry.new(/\/\d{4}\/\d{2}\/\d{2}\//, false),   # wordpress
       ]
     end

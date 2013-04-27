@@ -49,11 +49,38 @@ en:
     saving: "Saving..."
     saved: "Saved!"
 
-    user_action_descriptions:
+    user_action:
+      user_posted_topic: "<a href='{{userUrl}}'>{{user}}</a> posted <a href='{{topicUrl}}'>the topic</a>"
+      you_posted_topic: "<a href='{{userUrl}}'>You</a> posted <a href='{{topicUrl}}'>the topic</a>"
+      user_replied_to_post: "<a href='{{userUrl}}'>{{user}}</a> replied to <a href='{{postUrl}}'>{{post_number}}</a>"
+      you_replied_to_post: "<a href='{{userUrl}}'>You</a> replied to <a href='{{postUrl}}'>{{post_number}}</a>"
+      user_replied_to_topic: "<a href='{{userUrl}}'>{{user}}</a> replied to <a href='{{topicUrl}}'>the topic</a>"
+      you_replied_to_topic: "<a href='{{userUrl}}'>You</a> replied to <a href='{{topicUrl}}'>the topic</a>"
+
+      user_mentioned_user: "<a href='{{user1Url}}'>{{user}}</a> mentioned <a href='{{user2Url}}'>{{another_user}}</a>"
+      user_mentioned_you: "<a href='{{user1Url}}'>{{user}}</a> mentioned <a href='{{user2Url}}'>you</a>"
+      you_mentioned_user: "<a href='{{user1Url}}'>You</a> mentioned <a href='{{user2Url}}'>{{user}}</a>"
+
+      posted_by_user: "Posted by <a href='{{userUrl}}'>{{user}}</a>"
+      posted_by_you: "Posted by <a href='{{userUrl}}'>you</a>"
+      sent_by_user: "Sent by <a href='{{userUrl}}'>{{user}}</a>"
+      sent_by_you: "Sent by <a href='{{userUrl}}'>you</a>"
+
+    user_action_groups:
+      "1": "Likes Given"
+      "2": "Likes Received"
+      "3": "Bookmarks"
+      "4": "Topics"
+      "5": "Posts"
       "6": "Responses"
+      "7": "Mentions"
+      "9": "Quotes"
+      "10": "Favorites"
+      "11": "Edits"
+      "12": "Sent Items"
+      "13": "Inbox"
 
     user:
-      information: "User Information"
       profile: Profile
       title: "User"
       mute: Mute
@@ -295,7 +322,7 @@ en:
 
       users_placeholder: "Add a user"
       title_placeholder: "Type your title here. What is this discussion about in one brief sentence?"
-      reply_placeholder: "Type your reply here. Use Markdown or BBCode to format. Drag or paste an image here to upload it."
+      reply_placeholder: "Type here. Use Markdown or BBCode to format. Drag or paste an image to upload it."
       view_new_post: "View your new post."
       saving: "Saving..."
       saved: "Saved!"
@@ -331,6 +358,7 @@ en:
       undo_title: "Undo"
       redo_title: "Redo"
       help: "Markdown Editing Help"
+      toggler: "hide or show the composer panel"
 
     notifications:
       title: "notifications of @name mentions, replies to your posts and topics, private messages, etc"
@@ -346,13 +374,16 @@ en:
       invited_to_private_message: "{{username}} invited you to a private conversation: {{link}}"
       invitee_accepted: "<i title='accepted your invitation' class='icon icon-signin'></i> {{username}} accepted your invitation"
       moved_post: "<i title='moved post' class='icon icon-arrow-right'></i> {{username}} moved post to {{link}}"
+      total_flagged: "total flagged posts"
 
     image_selector:
       title: "Insert Image"
       from_my_computer: "From My Device"
       from_the_web: "From The Web"
       add_image: "Add Image"
+      remote_title: "remote image"
       remote_tip: "enter address of an image in the form http://example.com/image.jpg"
+      local_title: "local image"
       local_tip: "click to select an image from your device."
       upload: "Upload"
       uploading_image: "Uploading image"
@@ -565,6 +596,7 @@ en:
       continue_discussion: "Continuing the discussion from {{postLink}}:"
       follow_quote: "go to the quoted post"
       deleted_by_author: "(post removed by author)"
+      expand_collapse: "expand/collapse"
 
       has_replies:
         one: "Reply"
@@ -587,7 +619,7 @@ en:
         reply: "begin composing a reply to this post"
         like: "like this post"
         edit: "edit this post"
-        flag: "flag this post for moderator attention"
+        flag: "flag this post for attention or send a notification about it"
         delete: "delete this post"
         undelete: "undelete this post"
         share: "share a link to this post"
@@ -618,8 +650,10 @@ en:
           off_topic: "{{icons}} marked this as off-topic"
           spam: "{{icons}} marked this as spam"
           inappropriate: "{{icons}} marked this as inappropriate"
-          notify_moderators: "{{icons}} flagged this"
+          notify_moderators: "{{icons}} notified moderators"
+          notify_moderators_with_url: "{{icons}} <a href='{{postUrl}}'>notified moderators</a>"
           notify_user: "{{icons}} started a private conversation"
+          notify_user_with_url: "{{icons}} started a <a href='{{postUrl}}'>private conversation</a>"
           bookmark: "{{icons}} bookmarked this"
           like: "{{icons}} liked this"
           vote: "{{icons}} voted for this"
@@ -722,6 +756,7 @@ en:
     flagging:
       title: 'Why are you flagging this post?'
       action: 'Flag Post'
+      notify_action: 'Notify'
       cant: "Sorry, you can't flag this post at this time."
       custom_placeholder_notify_user: "Why does this post require you to speak to this user directly and privately? Be specific, be constructive, and always be kind."
       custom_placeholder_notify_moderators: "Why does this post require moderator attention? Let us know specifically what you are concerned about, and provide relevant links where possible."
@@ -733,6 +768,8 @@ en:
     topic_summary:
       title: "Topic Summary"
       links_shown: "show all {{totalLinks}} links..."
+      clicks: "clicks"
+      topic_link: "topic link"
 
     topic_statuses:
       locked:
@@ -809,7 +846,7 @@ en:
       moderator: 'Moderator'
 
       dashboard:
-        title: "Admin Dashboard"
+        title: "Dashboard"
         version: "Version"
         up_to_date: "You're up to date!"
         critical_available: "A critical update is available."
@@ -852,6 +889,11 @@ en:
         delete_title: "delete post (if its the first post delete topic)"
         flagged_by: "Flagged by"
         error: "Something went wrong"
+
+      groups:
+        title: "Groups"
+        edit: "Edit Groups"
+        selector_placeholder: "add users"
 
       api:
         title: "API"
@@ -899,6 +941,17 @@ en:
         approved_selected:
           one: "approve user"
           other: "approve users ({{count}})"
+        titles:
+          active: 'Active Users'
+          new: 'New Users'
+          pending: 'Users Pending Review'
+          newuser: 'Users at Trust Level 0 (New User)'
+          basic: 'Users at Trust Level 1 (Basic User)'
+          regular: 'Users at Trust Level 2 (Regular User)'
+          leader: 'Users at Trust Level 3 (Leader)'
+          elder: 'Users at Trust Level 4 (Elder)'
+          admins: 'Admin Users'
+          moderators: 'Moderators'
 
       user:
         ban_failed: "Something went wrong banning this user {{error}}"
@@ -918,7 +971,6 @@ en:
         grant_admin: 'Grant Admin'
         revoke_moderation: 'Revoke Moderation'
         grant_moderation: 'Grant Moderation'
-        basics: Basics
         reputation: Reputation
         permissions: Permissions
         activity: Activity

@@ -66,7 +66,7 @@ class ApplicationController < ActionController::Base
   end
 
   rescue_from Discourse::NotFound do
-    if request.format.html?
+    if !request.format || request.format.html?
       # for now do a simple remap, we may look at cleaner ways of doing the render
       raise ActiveRecord::RecordNotFound
     else
@@ -240,12 +240,7 @@ class ApplicationController < ActionController::Base
     alias :requires_parameter :requires_parameters
 
     def store_incoming_links
-      if request.referer.present?
-       parsed = URI.parse(request.referer)
-        if parsed.host != request.host
-          IncomingLink.create(url: request.url, referer: request.referer[0..999])
-        end
-      end
+      IncomingLink.add(request,current_user) unless request.xhr?
     end
 
     def check_xhr

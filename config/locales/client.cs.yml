@@ -11,6 +11,7 @@ cs:
       twitter: 'sdílet odkaz na Twitteru'
       facebook: 'sdílet odkaz na Facebooku'
       google+: 'sdílet odkaz na Google+'
+      email: 'odeslat odkaz emailem'
 
     edit: 'upravit název a kategorii příspěvku'
     not_implemented: "Tato fičura ještě není implementovaná"
@@ -52,7 +53,6 @@ cs:
       "6": "Odpovědi"
 
     user:
-      information: "Informace o uživateli"
       profile: Profil
       title: "Uživatel"
       mute: Ignorovat
@@ -307,6 +307,7 @@ cs:
       show_preview: 'zobrazit náhled &raquo;'
       hide_preview: '&laquo; skrýt náhled'
 
+      quote_post_title: "Citovat celý příspěvek"
       bold_title: "Tučně"
       bold_text: "tučný text"
       italic_title: "Kurzíva"
@@ -333,6 +334,7 @@ cs:
       undo_title: "Zpět"
       redo_title: "Opakovat"
       help: "Nápověda pro Markdown"
+      toggler: "zobrazit nebo skrýt editor příspěvku"
 
     notifications:
       title: "oznámení o zmínkách pomocí @name, odpovědi na vaše příspěvky a témata, soukromé zprávy, atd."
@@ -348,13 +350,16 @@ cs:
       invited_to_private_message: "{{username}} vás pozval do soukromé konverzace: {{link}}"
       invitee_accepted: "<i title='přijetí pozvánky' class='icon icon-signin'></i> {{username}} přijal vaši pozvánku"
       moved_post: "<i title='přesunutý příspěvek' class='icon icon-arrow-right'></i> {{username}} přesunul příspěvek do {{link}}"
+      total_flagged: "celkem nahlášeno příspěvků"
 
     image_selector:
       title: "Vložit obrázek"
       from_my_computer: "Z mého zařízení"
       from_the_web: "Z webu"
       add_image: "Přidat obrázek"
+      remote_title: "obrázek ze vzdáleného úložistě"
       remote_tip: "zadejte adresu obrázku ve formátu http://example.com/image.jpg"
+      local_title: "obrázek z lokálního úložiště"
       local_tip: "klikněte sem pro výběr obrázku z vašeho zařízení"
       upload: "Nahrát"
       uploading_image: "Nahrávám obrázek"
@@ -512,6 +517,7 @@ cs:
 
       invite_reply:
         title: 'Pozvat přátele k odpovědi'
+        action: 'Odeslat pozvánku'
         help: 'odeslat pozvánku přátelům, aby mohli na toto téma odpovědět jedním kliknutím'
         email: "Odešleme vašemu příteli krátký email s odkazem na možnost přímo odpovědět na toto téma."
         email_placeholder: 'emailová adresa'
@@ -573,6 +579,7 @@ cs:
       continue_discussion: "Pokračující diskuze z {{postLink}}:"
       follow_quote: "přejít na citovaný příspěvek"
       deleted_by_author: "(příspěvek odstraněn autorem)"
+      expand_collapse: "rozbalit/sbalit"
 
       has_replies:
         one: "Odpověď"
@@ -621,7 +628,6 @@ cs:
           off_topic: "Zrušit nahlášení"
           spam: "Zrušit nahlášení"
           inappropriate: "Zrušit nahlášení"
-          custom_flag: "Zrušit nahlášení"
           bookmark: "Odebrat ze záložek"
           like: "Už se mi to nelíbí"
           vote: "Zrušit hlas"
@@ -629,7 +635,10 @@ cs:
           off_topic: "{{icons}} označili tento příspěvek jako off-topic"
           spam: "{{icons}} označili tento příspěvek jako spam"
           inappropriate: "{{icons}} označili tento příspěvek jako nevhodný"
-          custom_flag: "{{icons}} nahlásili tento příspěvek"
+          notify_moderators: "{{icons}} nahlásili tento příspěvek"
+          notify_moderators_with_url: "{{icons}} <a href='{{postUrl}}'>nahlásili tento příspěvek</a>"
+          notify_user: "{{icons}} zahájili soukromou konverzaci"
+          notify_user_with_url: "{{icons}} zahájijli a <a href='{{postUrl}}'>soukromou konverzaci</a>"
           bookmark: "{{icons}} si přidali příspěvek do záložek"
           like: "{{icons}} se líbí tento příspěvek"
           vote: "{{icons}} hlasovali pro tento příspěvek"
@@ -637,7 +646,8 @@ cs:
           off_topic: "Označili jste tento příspěvek jako off-topic"
           spam: "Označili jste tento příspěvek jako spam"
           inappropriate: "Označili jste tento příspěvek jako nevhodný"
-          custom_flag: "Nahlásili jste tento příspěvek"
+          notify_moderators: "Nahlásili jste tento příspěvek"
+          notify_user: "Zahájili jste soukromou konverzaci s tímto uživatelem"
           bookmark: "Přidali jste si tento příspěvek do záložek"
           like: "Toto se vám líbí"
           vote: "Hlasovali jste pro tento příspěvek"
@@ -654,10 +664,14 @@ cs:
             one: "Vy a 1 další člověk jste označili tento příspěvek jako nevhodný"
             few: "Vy a {{count}} další lidé jste označili tento příspěvek jako nevhodný"
             other: "Vy a {{count}} dalších lidí jste označili tento příspěvek jako nevhodný"
-          custom_flag:
+          notify_moderators:
             one: "Vy a 1 další člověk jste nahlásili tento příspěvek"
             few: "Vy a {{count}} další lidé jste nahlásili tento příspěvek"
             other: "Vy a {{count}} dalších lidí jste nahlásili tento příspěvek"
+          notify_user:
+            one: "Vy a 1 další člověk jste zahájili soukromou konverzaci s tímto uživatelem"
+            few: "Vy a {{count}} další lidé jste zahájili soukromou konverzaci s tímto uživatelem"
+            other: "Vy a {{count}} dalších lidí jste zahájili soukromou konverzaci s tímto uživatelem"
           bookmark:
             one: "Vy a 1 další člověk jste si přidali tento příspěvek do záložek"
             few: "Vy a {{count}} další lidé jste si přidali tento příspěvek do záložek"
@@ -683,10 +697,14 @@ cs:
             one: "1 člověk označil tento příspěvek jako nevhodný"
             few: "{{count}} lidé označili tento příspěvek jako nevhodný"
             other: "{{count}} lidí označilo tento příspěvek jako nevhodný"
-          custom_flag:
+          notify_moderators:
             one: "1 člověk nahlásil tento příspěvek"
             few: "{{count}} lidé nahlásili tento příspěvek"
             other: "{{count}} lidí nahlásilo tento příspěvek"
+          notify_user:
+            one: "1 člověk zahájil soukromou konverzaci s tímto uživatelem"
+            few: "{{count}} lidé zahájili soukromou konverzaci s tímto uživatelem"
+            other: "{{count}} lidí zahájilo soukromou konverzaci s tímto uživatelem"
           bookmark:
             one: "1 člověk si přidal tento příspěvek do záložek"
             few: "{{count}} lidé si přidali tento příspěvek do záložek"
@@ -719,6 +737,7 @@ cs:
       view: 'Zobrazit témata v kategorii'
       delete: 'Smazat kategorii'
       create: 'Nová kategorie'
+      save: 'Uložit kategorii'
       creation_error: Během vytváření nové kategorie nastala chyba.
       more_posts: "zobrazit všechny {{posts}}..."
       name: "Název kategorie"
@@ -730,6 +749,7 @@ cs:
       name_placeholder: "Měl by být krátký a výstižný."
       color_placeholder: "Jakákoliv webová barva"
       delete_confirm: "Opravdu chcete odstranit tuto kategorii?"
+      delete_error: "Nastala chyba při odstraňování kategorie."
       list: "Seznam kategorií"
       no_description: "K této kategorii zatím není žádný popis."
       change_in_category_topic: "navštivte téma kategorie pro editaci jejího popisu"
@@ -739,8 +759,10 @@ cs:
     flagging:
       title: 'Proč chcete nahlásit tento příspěvek?'
       action: 'Nahlásit příspěvek'
+      notify_action: 'Oznámit'
       cant: "Bohužel nyní nemůžete tento příspěvek nahlásit."
-      custom_placeholder: "Proč příspěvek vyžaduje pozornost moderátora? Dejte nám vědět, co konkrétně vás znepokojuje, a poskytněte relevantní odkazy, je-li to možné."
+      custom_placeholder_notify_user: "Proč chcete s tímto uživatele mluvit přímo a soukromě? Buďte konstruktivní, konkrétní a hlavně vstřícní."
+      custom_placeholder_notify_moderators: "Proč příspěvek vyžaduje pozornost moderátora? Dejte nám vědět, co konkrétně vás znepokojuje, a poskytněte relevantní odkazy, je-li to možné."
       custom_message:
         at_least: "zadejte alespoň {{n}} znaků"
         more: "ještě {{n}}..."
@@ -749,6 +771,8 @@ cs:
     topic_summary:
       title: "Souhrn tématu"
       links_shown: "zobrazit všech {{totalLinks}} odkazů..."
+      clicks: "počet kliknutí"
+      topic_link: "odkaz na téma"
 
     topic_statuses:
       locked:
@@ -837,8 +861,13 @@ cs:
         installed_version: "Nainstalováno"
         latest_version: "Poslední verze"
         problems_found: "Byly nalezeny problémy s vaší instalací systému Discourse:"
+        last_checked: "Naposledy zkontrolováno"
+        refresh_problems: "Obnovit"
+        no_problems: "Nenalezeny žádné problémy."
         moderators: 'Moderátoři:'
         admins: 'Administrátoři:'
+        private_messages_short: "SZ"
+        private_messages_title: "Soukromé zprávy"
 
         reports:
           today: "Dnes"
@@ -866,6 +895,11 @@ cs:
         delete_title: "odstranit příspěvek (smaže celé téma, je-li to první příspěvek v tématu)"
         flagged_by: "Nahlásil"
         error: "Něco se pokazilo"
+
+      groups:
+        title: "Skupiny"
+        edit: "Editovat Skupiny"
+        selector_placeholder: "přidat uživatele"
 
       api:
         title: "API"
@@ -914,6 +948,17 @@ cs:
           one: "schválit uživatele"
           few: "schválit uživatele ({{count}})"
           other: "schválit uživatele ({{count}})"
+        titles:
+          active: 'Aktivní uživatelé'
+          new: 'Noví uživatelé'
+          pending: 'Uživatelé čekající na schválení'
+          newuser: 'Uživatelé s věrohodností 0 (Nový uživatel)'
+          basic: 'Uživatelé s věrohodností 1 (Základní uživatel)'
+          regular: 'Uživatelé s věrohodností 2 (Pravidelný uživatel)'
+          leader: 'Uživatelé s věrohodností 3 (Vedoucí)'
+          elder: 'Uživatelé s věrohodností 4 (Starší)'
+          admins: 'Admininstrátoři'
+          moderators: 'Moderátoři'
 
       user:
         ban_failed: "Nastala chyba při zakazování uživatele {{error}}"
@@ -933,7 +978,6 @@ cs:
         grant_admin: 'Udělit administrátorská práva'
         revoke_moderation: 'Odebrat moderátorská práva'
         grant_moderation: 'Udělit moderátorská práva'
-        basics: Základní informace
         reputation: Reputace
         permissions: Povolení
         activity: Aktivita
@@ -947,6 +991,11 @@ cs:
         approve: 'Schválit'
         approved_by: "schválil"
         time_read: "Čas čtení"
+        delete: "Smazat uživatele"
+        delete_forbidden: "Uživatele nelze odstranit, protože má na fóru zveřejněné příspěvky. Nejprve smažte všechny jeho příspěvky."
+        delete_confirm: "Jste si jistí, že chce permanentně smazat tohoto uživatele z fóra? Tato akce je nevratná!"
+        deleted: "Uživatel byl smazán."
+        delete_failed: "Nastala chyba při odstraňování uživatele. Ujistěte se, že jsou všechny příspěvky tohoto uživatele smazané, než budete uživatele mazat."
 
       site_content:
         none: "Zvolte typ obsahu a můžete začít editovat."

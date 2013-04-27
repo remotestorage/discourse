@@ -42,7 +42,6 @@ pseudo:
     user_action_descriptions:
       '6': '[[ Řéšƿóɳšéš ]]'
     user:
-      information: '[[ Ůšéř Íɳƒóřɱáťíóɳ ]]'
       profile: '[[ Рřóƒíłé ]]'
       title: '[[ Ůšéř ]]'
       mute: '[[ Ϻůťé ]]'
@@ -721,7 +720,7 @@ pseudo:
     admin:
       title: '[[ Ďíščóůřšé Áďɱíɳ ]]'
       dashboard:
-        title: '[[ Áďɱíɳ Ďášĥƀóářď ]]'
+        title: '[[ Ďášĥƀóářď ]]'
         version: '[[ Ѷéřšíóɳ ]]'
         up_to_date: '[[ Ýóů''řé ůƿ ťó ďáťé! ]]'
         critical_available: '[[ Á čříťíčáł ůƿďáťé íš áνáíłáƀłé. ]]'
@@ -818,7 +817,6 @@ pseudo:
         grant_admin: '[[ Ǧřáɳť Áďɱíɳ ]]'
         revoke_moderation: '[[ Řéνóǩé Ϻóďéřáťíóɳ ]]'
         grant_moderation: '[[ Ǧřáɳť Ϻóďéřáťíóɳ ]]'
-        basics: '[[ Ɓášíčš ]]'
         reputation: '[[ Řéƿůťáťíóɳ ]]'
         permissions: '[[ Рéřɱíššíóɳš ]]'
         activity: '[[ Áčťíνíťý ]]'

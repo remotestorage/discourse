@@ -12,6 +12,7 @@ module EmailBuilder
     if params[:add_unsubscribe_link]
       body << "\n"
       body << I18n.t("unsubscribe_link", params)
+      headers 'List-Unsubscribe' => "<#{params[:user_preferences_url]}>"
     end
 
     mail_args = {
@@ -20,6 +21,7 @@ module EmailBuilder
       body: body
     }
     mail_args[:from] = params[:from] || SiteSetting.notification_email
+    mail_args[:charset] = 'UTF-8'
     mail(mail_args)
   end
 

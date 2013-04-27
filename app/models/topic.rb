@@ -32,8 +32,8 @@ class Topic < ActiveRecord::Base
 
   serialize :meta_data, ActiveRecord::Coders::Hstore
 
+  before_validation :sanitize_title
   validate :unique_title
-
 
   belongs_to :category
   has_many :posts
@@ -75,13 +75,6 @@ class Topic < ActiveRecord::Base
   class FavoriteLimiter < RateLimiter
     def initialize(user)
       super(user, "favorited:#{Date.today.to_s}", SiteSetting.max_favorites_per_day, 1.day.to_i)
-    end
-  end
-
-  before_validation do
-    if title.present?
-      self.title = sanitize(title, tags: [], attributes: [])
-      self.title.strip!
     end
   end
 
@@ -151,6 +144,13 @@ class Topic < ActiveRecord::Base
     end
   end
 
+  def sanitize_title
+    if self.title.present?
+      self.title = sanitize(title, tags: [], attributes: [])
+      self.title.strip!
+    end
+  end
+
   def new_version_required?
     title_changed? || category_id_changed?
   end
@@ -170,6 +170,11 @@ class Topic < ActiveRecord::Base
   def update_meta_data(data)
     self.meta_data = (self.meta_data || {}).merge(data.stringify_keys)
     save
+  end
+
+  def reload(options=nil)
+    @post_numbers = nil
+    super(options)
   end
 
   def post_numbers
@@ -583,13 +588,34 @@ class Topic < ActiveRecord::Base
     end
   end
 
+  def self.starred_counts_per_day(sinceDaysAgo=30)
+    TopicUser.where('starred_at > ?', sinceDaysAgo.days.ago).group('date(starred_at)').order('date(starred_at)').count
+  end
+
   # Enable/disable the mute on the topic
   def toggle_mute(user, muted)
     TopicUser.change(user, self.id, notification_level: muted?(user) ? TopicUser.notification_levels[:regular] : TopicUser.notification_levels[:muted] )
   end
 
   def slug
-    Slug.for(title).presence || "topic"
+    unless slug = read_attribute(:slug)
+      return '' unless title.present?
+      slug = Slug.for(title).presence || "topic"
+      if new_record?
+        write_attribute(:slug, slug)
+      else
+        update_column(:slug, slug)
+      end
+    end
+
+    slug
+  end
+
+  def title=(t)
+    slug = ""
+    slug = (Slug.for(t).presence || "topic") if t.present?
+    write_attribute(:slug, slug)
+    write_attribute(:title,t)
   end
 
   def last_post_url

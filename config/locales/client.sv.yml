@@ -52,7 +52,6 @@ sv:
       "6": "Svar"
 
     user:
-      information: "Användarinformation"
       profile: Profil
       title: "Användare"
       mute: Dämpa
@@ -892,7 +891,6 @@ sv:
         grant_admin: 'Bevilja Administratör'
         revoke_moderation: 'Återkalla Moderering'
         grant_moderation: 'Bevilja Moderering'
-        basics: Grundläggande
         reputation: Rykte
         permissions: Rättigheter
         activity: Aktivitet

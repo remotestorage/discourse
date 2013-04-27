@@ -27,6 +27,7 @@ Discourse::Application.routes.draw do
     resources :site_settings
     get 'reports/:type' => 'reports#show'
 
+    resources :groups
     resources :users, id: USERNAME_ROUTE_FORMAT do
       collection do
         get 'list/:query' => 'users#index'
@@ -127,6 +128,8 @@ Discourse::Application.routes.draw do
       delete 'destroy_many'
     end
   end
+
+  get 'p/:post_id/:user_id' => 'posts#short_link'
 
   resources :notifications
   resources :categories

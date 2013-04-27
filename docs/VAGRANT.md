@@ -13,7 +13,7 @@ on Discourse with:
 2. Install VirtualBox: https://www.virtualbox.org/wiki/Downloads
 3. Install Vagrant: http://www.vagrantup.com/ (We require Vagrant 1.1.2+ or later)
 4. Open a terminal
-5. Clone the project: `git clone git@github.com:discourse/discourse.git`
+5. Clone the project: `git clone https://github.com/discourse/discourse.git`
 6. Enter the project directory: `cd discourse`
 
 ### Using Vagrant
@@ -40,6 +40,8 @@ that the NFS client software is properly installed, and consult any resources
 specific to the linux distro you're using for more information on how to
 do this.
 ```
+
+For example, on Ubuntu, you can install NFS support by installing nfs-kernel-server with `apt-get install`.
 
 Once the machine has booted up, you can shell into it by typing:
 

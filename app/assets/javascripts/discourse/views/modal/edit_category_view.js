@@ -72,7 +72,7 @@ Discourse.EditCategoryView = Discourse.ModalBodyView.extend({
       var categoryView = this;
 
       // We need the topic_count to be correct, so get the most up-to-date info about this category from the server.
-      Discourse.Category.findBySlug( this.get('category.slug') ).then( function(cat) {
+      Discourse.Category.findBySlugOrId( this.get('category.slug') || this.get('category.id') ).then( function(cat) {
         categoryView.set('category', cat);
         Discourse.get('site').updateCategory(cat);
         categoryView.set('id', categoryView.get('category.slug'));
@@ -95,7 +95,8 @@ Discourse.EditCategoryView = Discourse.ModalBodyView.extend({
     this.get('category').save().then(function(result) {
       // success
       $('#discourse-modal').modal('hide');
-      window.location = Discourse.getURL("/category/") + (Discourse.Utilities.categoryUrlId(result.category));
+      var url = Discourse.getURL("/category/") + (Discourse.Utilities.categoryUrlId(result.category));
+      Discourse.URL.redirectTo(url);
     }, function(errors) {
       // errors
       if(errors.length === 0) errors.push(Em.String.i18n("category.creation_error"));
@@ -112,7 +113,7 @@ Discourse.EditCategoryView = Discourse.ModalBodyView.extend({
       if (result) {
         categoryView.get('category').destroy().then(function(){
           // success
-          window.location = Discourse.getURL("/categories");
+          Discourse.URL.redirectTo(Discourse.getURL("/categories"));
         }, function(jqXHR){
           // error
           $('#discourse-modal').modal('show');

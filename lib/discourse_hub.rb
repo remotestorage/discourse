@@ -43,7 +43,9 @@ module DiscourseHub
     get('/version_check', {
       installed_version: Discourse::VERSION::STRING,
       forum_title: SiteSetting.title,
-      forum_domain: Discourse.current_hostname
+      forum_domain: Discourse.current_hostname,
+      contact_email: SiteSetting.contact_email,
+      topic_count: Topic.listable_topics.count
     })
   end
 

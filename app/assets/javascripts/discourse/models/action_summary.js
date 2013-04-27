@@ -57,6 +57,7 @@ Discourse.ActionSummary = Discourse.Model.extend({
 
     // Create our post action
     var actionSummary = this;
+
     return Discourse.ajax({
       url: Discourse.getURL("/post_actions"),
       type: 'POST',
@@ -67,7 +68,8 @@ Discourse.ActionSummary = Discourse.Model.extend({
       }
     }).then(null, function (error) {
       actionSummary.removeAction();
-      return $.parseJSON(error.responseText).errors;
+      var message = $.parseJSON(error.responseText).errors;
+      bootbox.alert(message);
     });
   },
 

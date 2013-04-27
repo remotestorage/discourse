@@ -4,8 +4,16 @@ require_dependency 'post_destroyer'
 class PostsController < ApplicationController
 
   # Need to be logged in for all actions here
-  before_filter :ensure_logged_in, except: [:show, :replies, :by_number]
+  before_filter :ensure_logged_in, except: [:show, :replies, :by_number, :short_link]
 
+  skip_before_filter :store_incoming_links, only: [:short_link]
+  skip_before_filter :check_xhr, only: [:short_link]
+
+  def short_link
+    post = Post.find(params[:post_id].to_i)
+    IncomingLink.add(request,current_user)
+    redirect_to post.url
+  end
 
   def create
     requires_parameter(:post)

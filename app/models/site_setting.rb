@@ -12,12 +12,15 @@ class SiteSetting < ActiveRecord::Base
   client_setting(:title, "Discourse")
   client_setting(:logo_url, '/assets/d-logo-sketch.png')
   client_setting(:logo_small_url, '/assets/d-logo-sketch-small.png')
+  setting(:contact_email, '')
   setting(:company_full_name, 'My Unconfigured Forum Ltd.')
   setting(:company_short_name, 'Unconfigured Forum')
   setting(:company_domain, 'www.example.com')
+  setting(:tos_url, '')
+  setting(:privacy_policy_url, '')
   setting(:api_key, '')
   client_setting(:traditional_markdown_linebreaks, false)
-  client_setting(:top_menu, 'latest|hot|new|unread|favorited|categories')
+  client_setting(:top_menu, 'latest|new|unread|favorited|categories')
   client_setting(:post_menu, 'like|edit|flag|delete|share|bookmark|reply')
   client_setting(:share_links, 'twitter|facebook|google+|email')
   client_setting(:track_external_right_clicks, false)
@@ -48,7 +51,7 @@ class SiteSetting < ActiveRecord::Base
   client_setting(:max_upload_size_kb, 1024)
 
   # settings only available server side
-  setting(:auto_track_topics_after, 300000)
+  setting(:auto_track_topics_after, 240000)
   setting(:new_topic_duration_minutes, 60 * 48)
   setting(:long_polling_interval, 15000)
   setting(:flags_required_to_hide_post, 3)
@@ -79,7 +82,7 @@ class SiteSetting < ActiveRecord::Base
   setting(:post_undo_action_window_mins, 10)
   setting(:system_username, '')
   setting(:max_mentions_per_post, 10)
-  setting(:visitor_max_mentions_per_post, 2)
+  setting(:newuser_max_mentions_per_post, 2)
 
   setting(:uncategorized_name, 'uncategorized')
 
@@ -97,7 +100,7 @@ class SiteSetting < ActiveRecord::Base
   setting(:max_favorites_per_day, 20)
   setting(:auto_link_images_wider_than, 50)
 
-  setting(:email_time_window_mins, 5)
+  setting(:email_time_window_mins, 10)
 
   # How many characters we can import into a onebox
   setting(:onebox_max_chars, 5000)
@@ -168,8 +171,8 @@ class SiteSetting < ActiveRecord::Base
   setting(:body_min_entropy, 7)
   setting(:max_word_length, 30)
 
-  setting(:visitor_max_links, 2)
-  setting(:visitor_max_images, 0)
+  setting(:newuser_max_links, 2)
+  setting(:newuser_max_images, 0)
 
   setting(:title_fancy_entities, true)
 
@@ -179,6 +182,11 @@ class SiteSetting < ActiveRecord::Base
   client_setting(:educate_until_posts, 2)
 
   setting(:max_similar_results, 7)
+
+  # Settings for topic heat
+  client_setting(:topic_views_heat_low,    1000)
+  client_setting(:topic_views_heat_medium, 2000)
+  client_setting(:topic_views_heat_high,   5000)
 
   def self.generate_api_key!
     self.api_key = SecureRandom.hex(32)
