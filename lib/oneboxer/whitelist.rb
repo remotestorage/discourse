@@ -3,6 +3,8 @@ module Oneboxer
   module Whitelist
     def self.entries
       [
+       Entry.new(/^https?:\/\/(?:www\.)?slideshare\.net\/.+/),
+       Entry.new(/^https?:\/\/(?:www\.)?rottentomatoes\.com\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?cnn\.com\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?washingtonpost\.com\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?funnyordie\.com\/.+/),
@@ -14,7 +16,7 @@ module Oneboxer
        Entry.new(/^https?:\/\/(?:www\.)?ebay\.(com|ca|co\.uk)\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?nytimes\.com\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?pinterest\.com\/.+/),
-       Entry.new(/^https?:\/\/(?:www\.)?imdb\.com\/.+/),
+       # Entry.new(/^https?:\/\/(?:www\.)?imdb\.com\/.+/),  # For legal reasons, we cannot include IMDB onebox support
        Entry.new(/^https?:\/\/(?:www\.)?bbc\.co\.uk\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?ask\.com\/.+/),
        Entry.new(/^https?:\/\/(?:www\.)?huffingtonpost\.com\/.+/),
@@ -75,6 +77,7 @@ module Oneboxer
        Entry.new(/^https?:\/\/(?:www\.)?tumblr\.com\/.+/, false),
        Entry.new(/^https?:\/\/(?:www\.)?howtogeek\.com\/.+/, false),
        Entry.new(/\/\d{4}\/\d{2}\/\d{2}\//, false),   # wordpress
+       Entry.new(/^https?:\/\/[^\/]+\/t\/[^\/]+\/\d+(\/\d+)?(\?.*)?$/)
       ]
     end
 

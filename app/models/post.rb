@@ -3,19 +3,19 @@ require_dependency 'pretty_text'
 require_dependency 'rate_limiter'
 require_dependency 'post_revisor'
 require_dependency 'enum'
+require_dependency 'trashable'
 
 require 'archetype'
 require 'digest/sha1'
 
 class Post < ActiveRecord::Base
   include RateLimiter::OnCreateRecord
+  include Trashable
 
   versioned if: :raw_changed?
 
   rate_limit
-  acts_as_paranoid
 
-  after_recover :update_flagged_posts_count
 
   belongs_to :user
   belongs_to :topic, counter_cache: :posts_count
@@ -50,6 +50,11 @@ class Post < ActiveRecord::Base
 
   def self.types
     @types ||= Enum.new(:regular, :moderator_action)
+  end
+
+  def recover!
+    super
+    update_flagged_posts_count
   end
 
   def raw_quality
@@ -221,14 +226,14 @@ class Post < ActiveRecord::Base
                 user_id: user_id).first.try(:user)
   end
 
-  def self.excerpt(cooked, maxlength = nil)
+  def self.excerpt(cooked, maxlength = nil, options = {})
     maxlength ||= SiteSetting.post_excerpt_maxlength
-    PrettyText.excerpt(cooked, maxlength)
+    PrettyText.excerpt(cooked, maxlength, options)
   end
 
   # Strip out most of the markup
-  def excerpt(maxlength = nil)
-    Post.excerpt(cooked, maxlength)
+  def excerpt(maxlength = nil, options = {})
+    Post.excerpt(cooked, maxlength, options)
   end
 
   # What we use to cook posts

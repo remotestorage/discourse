@@ -343,6 +343,21 @@ fr:
       title: Notifications Utilisateur
       xaxis: Jour
       yaxis: Nombre de messages privés
+    top_referrers:
+      title: Meilleurs référants
+      xaxis: Utilisateurs
+      num_visits: Visites
+      num_topics: Discussions
+    top_traffic_sources:
+      title: Meilleures sources de traffic
+      xaxis: Domaine
+      num_visits: Visites
+      num_topics: Discussions
+      num_users: Utilisateurs
+    top_referred_topics:
+      title: Discussions les plus référencées
+      xaxis: Discussion
+      num_visits: Visites
 
   dashboard:
     rails_env_warning: "Votre serveur fonctionne dans l'environnement de %{env}."
@@ -359,6 +374,7 @@ fr:
     default_logo_warning: "Vous n'avez pas changé le logo de votre site. Merci de mettre à jour les <a href='/admin/site_settings'>paramètres du site</a> suivant : logo_url, logo_small_url et favicon_url."
     contact_email_missing: "Vous n'avez pas renseigné d'email de contact pour votre site. Merci de mettre à jour le <a href='/admin/site_settings'>paramètre de site</a> : contact_email."
     contact_email_invalid: "L'email de contact du site est invalide. Merci de mettre à jour le <a href='/admin/site_settings'>paramètre de site</a> : contact_email."
+    title_nag: "Le titre de votre site est toujours à sa valeur par défaut. Merci de le modifier dans les <a href='/admin/site_settings'>paramètres du site</a>."
 
   content_types:
     education_new_reply:
@@ -406,7 +422,8 @@ fr:
     crawl_images: "permettre la récupération des images provenant de sources tierces"
     ninja_edit_window: "temps d'édition avant de sauvegarder une nouvelle version, en secondes."
     enable_imgur: "utiliser l'envoi des images avec l'API imgur, ne pas stocker les fichiers localement"
-    imgur_api_key: "clé de l'API imgur.com - requis pour l'envoi d'images"
+    imgur_client_id: "Votre ID client imgur.com. Requis pour que l'envoi d'images fonctionne."
+    imgur_client_secret: "Votre secret imgur.com. Pas nécessaire pour que l'envoi d'image fonctionne, mais pourrais le devenir."
     imgur_endpoint: "point d'arrêt pour le chargement d'images sur imgur.com"
     max_image_width: "largeur maximale des images d'un message"
     category_featured_topics: "nombre de discussions affichées dans la liste par catégories"
@@ -444,7 +461,8 @@ fr:
     traditional_markdown_linebreaks: "Utiliser le retour à la ligne traditionnel dans markdown, le wrapping est implicite sauf si suivi de 2 espaces"
     post_undo_action_window_mins: "La fenêtre dans laquelle chacun peut annuler une action sur un message (comme signaler)"
     must_approve_users: "Les propriétaires du forum doivent approuver les utilisateurs avant qu'il y aient accès."
-    ga_tracking_code: "Code de suivi de Google Analytics, voir: http://google.com/analytics"
+    ga_tracking_code: "Code de suivi de Google Analytics, par exemple : UA-12345678-9, voir: http://google.com/analytics"
+    ga_domain_name: "Domaine de suivi de Google Analytics, par exemple : monsite.com, voir: http://google.com/analytics"
     top_menu: "L'ordre des éléments dans le menu du haut. Exemple populaire|lus|favoris|non lus|nouveaux|posté|categories"
     post_menu: "L'ordre des éléments dans le menu de rédaction"
     share_links: "Liste ordonnée des boutons de partage. Exemple : twitter|facebook|google+"
@@ -489,6 +507,9 @@ fr:
     previous_visit_timeout_hours: "Combien de temps dure une visite avant de la considérer comme la visite 'précédente', en heures."
 
     uncategorized_name: "Nom pour les discussions sans catégorie dans la liste des catégories"
+    uncategorized_color: "La couleur du badge de la catégorie des discussions qui ne sont dans aucune catégorie"
+    uncategorized_text_color: "La couleur du text du badge de la catégorie des discussions qui ne sont dans aucune catégorie"
+
     newuser_max_links: "Nombre maximum de liens qu'un visiteur peut ajouter à un message"
     newuser_max_images: "Nombre maximum d'images qu'un visiteur peut ajouter à un message"
     newuser_max_mentions_per_post: "Nombre maximum de référence à un @utilisateur qu'un visiteur peut ajouter à un message"
@@ -538,7 +559,7 @@ fr:
     min_body_similar_length: "La taille minimale du message avant que l'on vérifie l'existence de discussions identiques"
 
     category_colors: "Une liste de couleurs autorisées pour les catégories (au format hexadécimal, séparés par un |)"
-    max_upload_size_kb: "La taille maximum des fichiers que les utilisateurs peuvent envoyer en Kb - assurez-vous de configurer également cette limite dans nginx (client_max_body_size) / apache ou votre proxy."
+    max_upload_size_kb: "La taille maximum des fichiers que les utilisateurs peuvent envoyer en kB - assurez-vous de configurer également cette limite dans nginx (client_max_body_size) / apache ou votre proxy."
     max_similar_results: "Nombre de discussions similaires à afficher lorsqu'un utilisateur est en train de créer une nouvelle discussion"
 
     title_prettify: "Corrige les coquilles les plus communes dans les titres (intégralité du titre en majuscule, première lettre en minuscule, de multiples ! et ?, un . inutile à la fin, etc.)"
@@ -546,6 +567,9 @@ fr:
     topic_views_heat_low: "Le nombre de vues à partir duquel le niveau d'intensité de la discussion est : faible."
     topic_views_heat_medium: "Le nombre de vues à partir duquel le niveau d'intensité de la discussion est : moyen."
     topic_views_heat_high: "Le nombre de vues à partir duquel le niveau d'intensité de la discussion est : élevé."
+
+    tos_url: "Si vous disposez déjà de CGV, vous pouvez renseigner leur URL ici."
+    privacy_policy_url: "Si vous disposez déjà d'une politique de confidentialité, vous pouvez renseigner son URL ici."
 
   notification_types:
     mentioned: "%{display_username} vous a mentionné dans %{link}"
@@ -569,31 +593,6 @@ fr:
   most_posts: "Le plus de messages"
   most_recent_poster: "Auteur le plus récent"
   frequent_poster: "Auteur frequent"
-
-  user_action_descriptions:
-    bookmarks: "Signets"
-    topics: "Discussions"
-    likes_received: "J'aime reçus"
-    likes_given: "J'aime donnés"
-    responses: "Réponses"
-    topic_responses: "Réponses à la discussion"
-    posts: "Messages"
-    mentions: "Mentions"
-    quotes: "Citations"
-    edits: "Modifications"
-    favorites: "Favoris"
-    sent_items: "Elements envoyés"
-    inbox: "Boîte de réception"
-
-    was_liked: "a été aimé"
-    liked: "aimé"
-    bookmarked: "ajouté aux signets"
-    posted: "posté"
-    responded_to: "réponse_à"
-    mentioned: "mentionné"
-    quoted: "cité"
-    favorited: "mis en favoris"
-    edited: "modifié"
 
   move_posts:
     moderator_post:
@@ -934,3 +933,9 @@ fr:
     miscellaneous: "This Agreement constitutes the entire agreement between %{company_short_name} and you concerning the subject matter ereof, and they may only be modified by a written amendment signed by an authorized executive of %{company_short_name}, or by the posting by %{company_short_name} of a revised version. Except to the extent applicable law, if any, provides otherwise, this Agreement, any access to or use of the Website will be governed by the laws of the state of California, U.S.A., excluding its conflict of law provisions, and the proper venue for any disputes arising out of or relating to any of the same will be the state and federal courts located in San Francisco County, California. Except for claims for injunctive or equitable relief or claims regarding intellectual property rights (which may be brought in any competent court without the posting of a bond), any dispute arising under this Agreement shall be finally settled in accordance with the Comprehensive Arbitration Rules of the Judicial Arbitration and Mediation Service, Inc. (“JAMS”) by three arbitrators appointed in accordance with such Rules. The arbitration shall take place in San Francisco, California, in the English language and the arbitral decision may be enforced in any court. The prevailing party in any action or proceeding to enforce this Agreement shall be entitled to costs and attorneys’ fees. If any part of this Agreement is held invalid or unenforceable, that part will be construed to reflect the parties’ original intent, and the remaining portions will remain in full force and effect. A waiver by either party of any term or condition of this Agreement or any breach thereof, in any one instance, will not waive such term or condition or any subsequent breach thereof. You may assign your rights under this Agreement to any party that consents to, and agrees to be bound by, its terms and conditions; %{company_short_name} may assign its rights under this Agreement without condition. This Agreement will be binding upon and will inure to the benefit of the parties, their successors and permitted assigns."
 
   deleted: 'supprimmé'
+
+  upload:
+    image:
+      fetch_failure: "Désolé, une erreur s'est produite lorsque nous avons essayé de récupérer l'image."
+      unknown_image_type: "Désolé, mais le fichier que vous essayez d'envoyer ne semble pas être une image."
+      size_not_found: "Désolé, mais nous n'avons pas réussit à déterminer la taille de l'image. Peut-être que l'image est corrompue ?"

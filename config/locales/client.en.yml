@@ -30,12 +30,13 @@ en:
     you: "You"
     or: "or"
     now: "just now"
+    read_more: 'read more'
 
     suggested_topics:
       title: "Suggested Topics"
 
     bookmarks:
-      not_logged_in: "Sorry you must be logged in to bookmark posts."
+      not_logged_in: "Sorry, you must be logged in to bookmark posts."
       created: "You've bookmarked this post."
       not_bookmarked: "You've read this post; click to bookmark it."
       last_read: "This is the last post you've read."
@@ -71,7 +72,7 @@ en:
       "2": "Likes Received"
       "3": "Bookmarks"
       "4": "Topics"
-      "5": "Posts"
+      "5": "Replies"
       "6": "Responses"
       "7": "Mentions"
       "9": "Quotes"
@@ -96,6 +97,9 @@ en:
       external_links_in_new_tab: "Open all external links in a new tab"
       enable_quoting: "Enable quote reply for highlighted text"
 
+      moderator: "{{user}} is a moderator"
+      admin: "{{user}} is an admin"
+
       change_password:
         action: "change"
         success: "(email sent)"
@@ -106,13 +110,13 @@ en:
         action: "change"
         title: "Change Username"
         confirm: "There could be consequences to changing your username. Are you absolutely sure you want to?"
-        taken: "Sorry that username is taken."
+        taken: "Sorry, that username is taken."
         error: "There was an error changing your username."
         invalid: "That username is invalid. It must only include numbers and letters"
       change_email:
         action: 'change'
         title: "Change Email"
-        taken: "Sorry that email is not available."
+        taken: "Sorry, that email is not available."
         error: "There was an error changing your email. Perhaps that address is already in use?"
         success: "We've sent an email to that address. Please follow the confirmation instructions."
 
@@ -244,7 +248,7 @@ en:
       disable: 'Cancel "Best Of"'
 
     private_message_info:
-      title: "Private Conversation"
+      title: "Private Message"
       invite: "Invite Others..."
 
     email: 'Email'
@@ -371,9 +375,9 @@ en:
       edited: "<i title='edited' class='icon icon-pencil'></i> {{username}} {{link}}"
       liked: "<i title='liked' class='icon icon-heart'></i> {{username}} {{link}}"
       private_message: "<i class='icon icon-envelope-alt' title='private message'></i> {{username}} {{link}}"
-      invited_to_private_message: "{{username}} invited you to a private conversation: {{link}}"
+      invited_to_private_message: "<i class='icon icon-envelope-alt' title='private message'></i> {{username}} {{link}}"
       invitee_accepted: "<i title='accepted your invitation' class='icon icon-signin'></i> {{username}} accepted your invitation"
-      moved_post: "<i title='moved post' class='icon icon-arrow-right'></i> {{username}} moved post to {{link}}"
+      moved_post: "<i title='moved post' class='icon icon-arrow-right'></i> {{username}} moved to {{link}}"
       total_flagged: "total flagged posts"
 
     image_selector:
@@ -433,7 +437,7 @@ en:
       create_in: 'Create {{categoryName}} Topic'
       create: 'Create Topic'
       create_long: 'Create a new Topic'
-      private_message: 'Start a private conversation'
+      private_message: 'Start a private message'
       list: 'Topics'
       new: 'new topic'
       title: 'Topic'
@@ -444,7 +448,7 @@ en:
         description: "Sorry, you don't have access to that topic!"
       server_error:
         title: "Topic failed to load"
-        description: "Sorry, we couldn't load that topic, possibly due to a connection problem. Please try again. If the problem persists, please let us know."
+        description: "Sorry, we couldn't load that topic, possibly due to a connection problem. Please try again. If the problem persists, let us know."
       not_found:
         title: "Topic not found"
         description: "Sorry, we couldn't find that topic. Perhaps it was removed by a moderator?"
@@ -531,12 +535,12 @@ en:
       inviting: "Inviting..."
 
       invite_private:
-        title: 'Invite to Private Conversation'
+        title: 'Invite to Private Message'
         email_or_username: "Invitee's Email or Username"
         email_or_username_placeholder: "email address or username"
         action: "Invite"
-        success: "Thanks! We've invited that user to participate in this private conversation."
-        error: "Sorry there was an error inviting that user."
+        success: "Thanks! We've invited that user to participate in this private message."
+        error: "Sorry, there was an error inviting that user."
 
       invite_reply:
         title: 'Invite Friends to Reply'
@@ -545,7 +549,7 @@ en:
         email: "We'll send your friend a brief email allowing them to reply to this topic by clicking a link."
         email_placeholder: 'email address'
         success: "Thanks! We mailed out an invitation to <b>{{email}}</b>. We'll let you know when they redeem your invitation. Check the invitations tab on your user page to keep track of who you've invited."
-        error: "Sorry we couldn't invite that person. Perhaps they are already a user?"
+        error: "Sorry, we couldn't invite that person. Perhaps they are already a user?"
 
       login_reply: 'Log In to Reply'
 
@@ -652,8 +656,8 @@ en:
           inappropriate: "{{icons}} marked this as inappropriate"
           notify_moderators: "{{icons}} notified moderators"
           notify_moderators_with_url: "{{icons}} <a href='{{postUrl}}'>notified moderators</a>"
-          notify_user: "{{icons}} started a private conversation"
-          notify_user_with_url: "{{icons}} started a <a href='{{postUrl}}'>private conversation</a>"
+          notify_user: "{{icons}} sent a private message"
+          notify_user_with_url: "{{icons}} sent a <a href='{{postUrl}}'>private message</a>"
           bookmark: "{{icons}} bookmarked this"
           like: "{{icons}} liked this"
           vote: "{{icons}} voted for this"
@@ -662,7 +666,7 @@ en:
           spam: "You flagged this as spam"
           inappropriate: "You flagged this as inappropriate"
           notify_moderators: "You flagged this for moderation"
-          notify_user: "You started a private conversation with this user"
+          notify_user: "You sent a private message to this user"
           bookmark: "You bookmarked this post"
           like: "You liked this"
           vote: "You voted for this post"
@@ -680,8 +684,8 @@ en:
             one: "You and 1 other flagged this for moderation"
             other: "You and {{count}} other people flagged this for moderation"
           notify_user:
-            one: "You and 1 other started a private conversation with this user"
-            other: "You and {{count}} other started a private conversation with this user"
+            one: "You and 1 other sent a private message to this user"
+            other: "You and {{count}} other people sent a private message to this user"
           bookmark:
             one: "You and 1 other bookmarked this post"
             other: "You and {{count}} other people bookmarked this post"
@@ -705,8 +709,8 @@ en:
             one: "1 person flagged this for moderation"
             other: "{{count}} people flagged this for moderation"
           notify_user:
-            one: "1 person started a private conversation with this user"
-            other: "{{count}} started a private conversation with this user"
+            one: "1 person sent a private message to this user"
+            other: "{{count}} sent a private message to this user"
           bookmark:
             one: "1 person bookmarked this post"
             other: "{{count}} people bookmarked this post"
@@ -731,11 +735,13 @@ en:
       none: '(no category)'
       edit: 'edit'
       edit_long: "Edit Category"
+      edit_uncategorized: "Edit Uncategorized"
       view: 'View Topics in Category'
       delete: 'Delete Category'
       create: 'Create Category'
       save: 'Save Category'
       creation_error: There has been an error during the creation of the category.
+      save_error: There was an error saving the category.
       more_posts: "view all {{posts}}..."
       name: "Category Name"
       description: "Description"
@@ -889,14 +895,23 @@ en:
         delete_title: "delete post (if its the first post delete topic)"
         flagged_by: "Flagged by"
         error: "Something went wrong"
+        view_message: "view message"
 
       groups:
         title: "Groups"
         edit: "Edit Groups"
         selector_placeholder: "add users"
+        name_placeholder: "Group name, no spaces, same as username rule"
 
       api:
         title: "API"
+        long_title: "API Information"
+        key: "Key"
+        generate: "Generate API Key"
+        regenerate: "Regenerate API Key"
+        info_html: "Your API key will allow you to create and update topics using JSON calls."
+        note_html: "Keep this key <strong>secret</strong>, all users that have it may create arbitrary posts on the forum as any user."
+
       customize:
         title: "Customize"
         long_title: "Site Customizations"
@@ -933,7 +948,7 @@ en:
         title: 'Users'
         create: 'Add Admin User'
         last_emailed: "Last Emailed"
-        not_found: "Sorry that username doesn't exist in our system."
+        not_found: "Sorry, that username doesn't exist in our system."
         new: "New"
         active: "Active"
         pending: "Pending"
@@ -989,6 +1004,13 @@ en:
         delete_confirm: "Are you SURE you want to permanently delete this user from the site? This action is permanent!"
         deleted: "The user was deleted."
         delete_failed: "There was an error deleting that user. Make sure all posts are deleted before trying to delete the user."
+        send_activation_email: "Send Activation Email"
+        activation_email_sent: "An activation email has been sent."
+        send_activation_email_failed: "There was a problem sending another activation email."
+        activate: "Activate Account"
+        activate_failed: "There was a problem activating the user."
+        deactivate_account: "Deactivate Account"
+        deactivate_failed: "There was a problem deactivating the user."
 
       site_content:
         none: "Choose a type of content to begin editing."

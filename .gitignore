@@ -20,6 +20,8 @@ dump.rdb
 /cache
 /coverage/*
 
+/public/assets/*
+
 config/database.yml
 config/redis.yml
 config/discourse.pill
@@ -82,6 +84,6 @@ config/version.rb
 
 # ignore the Ruby Version manager (rvm) file
 .rvmrc
-
-# ignore ctags file
-gems.tags
+.ruby-version
+.ruby-gemset
+.rbenv

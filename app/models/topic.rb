@@ -4,10 +4,12 @@ require_dependency 'topic_view'
 require_dependency 'rate_limiter'
 require_dependency 'text_sentinel'
 require_dependency 'text_cleaner'
+require_dependency 'trashable'
 
 class Topic < ActiveRecord::Base
   include ActionView::Helpers
   include RateLimiter::OnCreateRecord
+  include Trashable
 
   def self.max_sort_order
     2**31 - 1
@@ -18,9 +20,17 @@ class Topic < ActiveRecord::Base
   end
 
   versioned if: :new_version_required?
-  acts_as_paranoid
-  after_recover :update_flagged_posts_count
-  after_destroy :update_flagged_posts_count
+
+
+  def trash!
+    super
+    update_flagged_posts_count
+  end
+
+  def recover!
+    super
+    update_flagged_posts_count
+  end
 
   rate_limit :default_rate_limiter
   rate_limit :limit_topics_per_day
@@ -38,6 +48,10 @@ class Topic < ActiveRecord::Base
   belongs_to :category
   has_many :posts
   has_many :topic_allowed_users
+  has_many :topic_allowed_groups
+
+  has_many :allowed_group_users, through: :allowed_groups, source: :users
+  has_many :allowed_groups, through: :topic_allowed_groups, source: :group
   has_many :allowed_users, through: :topic_allowed_users, source: :user
 
   has_one :hot_topic
@@ -58,7 +72,6 @@ class Topic < ActiveRecord::Base
   attr_accessor :posters  # TODO: can replace with posters_summary once we remove old list code
   attr_accessor :topic_list
 
-
   # The regular order
   scope :topic_list_order, lambda { order('topics.bumped_at desc') }
 
@@ -69,7 +82,7 @@ class Topic < ActiveRecord::Base
 
   scope :listable_topics, lambda { where('topics.archetype <> ?', [Archetype.private_message]) }
 
-  scope :by_newest, order('created_at desc, id desc')
+  scope :by_newest, order('topics.created_at desc, topics.id desc')
 
   # Helps us limit how many favorites can be made in a day
   class FavoriteLimiter < RateLimiter
@@ -93,6 +106,12 @@ class Topic < ActiveRecord::Base
     else
       DraftSequence.next!(user, Draft::NEW_TOPIC)
     end
+  end
+
+  # all users (in groups or directly targetted) that are going to get the pm
+  def all_allowed_users
+    # TODO we should probably change this from 3 queries to 1
+    User.where('id in (?)', allowed_users.select('users.id').to_a + allowed_group_users.select('users.id').to_a)
   end
 
   # Additional rate limits on topics: per day and private messages per day
@@ -570,7 +589,7 @@ class Topic < ActiveRecord::Base
   # Enable/disable the star on the topic
   def toggle_star(user, starred)
     Topic.transaction do
-      TopicUser.change(user, id, starred: starred, starred_at: starred ? DateTime.now : nil)
+      TopicUser.change(user, id, {starred: starred}.merge( starred ? {starred_at: DateTime.now, unstarred_at: nil} : {unstarred_at: DateTime.now}))
 
       # Update the star count
       exec_sql "UPDATE topics
@@ -622,9 +641,16 @@ class Topic < ActiveRecord::Base
     "/t/#{slug}/#{id}/#{posts_count}"
   end
 
+
+  def self.url(id, slug, post_number=nil)
+    url = "#{Discourse.base_url}/t/#{slug}/#{id}"
+    url << "/#{post_number}" if post_number.to_i > 1
+    url
+  end
+
   def relative_url(post_number=nil)
     url = "/t/#{slug}/#{id}"
-    url << "/#{post_number}" if post_number.present? && post_number.to_i > 1
+    url << "/#{post_number}" if post_number.to_i > 1
     url
   end
 

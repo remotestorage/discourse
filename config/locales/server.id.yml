@@ -331,7 +331,7 @@ id:
     best_of_posts_required: "Minimum posts in a topic before 'best of' mode is enabled"
     best_of_likes_required: "Minimum likes in a topic before the 'best of' mode will be enabled"
     best_of_percent_filter: "When a user clicks best of, show the top % of posts"
-    enable_private_messages: "Allow basic (1) trust level users to create private messages and reply to private conversations"
+    enable_private_messages: "Allow basic (1) trust level users to create private messages and reply to private messages"
 
     enable_long_polling: "Message bus used for notification can use long polling"
     long_polling_interval: "Interval before a new long poll is issued in milliseconds "
@@ -344,7 +344,7 @@ id:
     flags_required_to_hide_post: "Number of flags that cause a post to be automatically hidden and PM sent to the user (0 for never)"
     cooldown_minutes_after_hiding_posts: "Number of minutes a user must wait before they can edit the post that was hidden due to flagging"
 
-    traditional_markdown_linebreaks: "Use traditional linebreaks in Markdown, instead of requiring two trailing spaces for a linebreak"
+    traditional_markdown_linebreaks: "Use traditional linebreaks in Markdown, which require two trailing spaces for a linebreak"
     post_undo_action_window_mins: "Number of seconds users are allowed to reverse actions on a post (like, flag, etc)"
     must_approve_users: "Admins must approve all users before they gain access"
     ga_tracking_code: "Google analytics tracking code code, eg: UA-12345678-9; see http://google.com/analytics"
@@ -428,7 +428,7 @@ id:
     min_body_similar_length: "The minimum length of a post's body before it will be checked for similar topics"
 
     category_colors: "A pipe (|) separated list of hexadecimal color values allowed for categories"
-    max_upload_size_kb: "The maximum size of files we allow users to upload in kb - be sure to configure the limit in nginx (client_max_body_size) / apache or proxy as well."
+    max_upload_size_kb: "The maximum size of files we allow users to upload in kB - be sure to configure the limit in nginx (client_max_body_size) / apache or proxy as well."
     max_similar_results: "How many similar topics to show a user while they are composing a new topic"
 
   notification_types:
@@ -698,9 +698,9 @@ id:
       description: "Not interested in getting these emails? No problem! Click below to unsubscribe instantly:"
 
     user_invited_to_private_message:
-      subject_template: "[%{site_name}] %{username} invited you to a private conversation '%{topic_title}'"
+      subject_template: "[%{site_name}] %{username} invited you to a private message '%{topic_title}'"
       text_body_template: |
-        %{username} invited you to a private conversation '%{topic_title}' on %{site_name}:
+        %{username} invited you to a private message '%{topic_title}' on %{site_name}:
 
         Please visit this link to view the topic: %{base_url}%{url}
 

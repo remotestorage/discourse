@@ -26,6 +26,7 @@ class SiteSetting < ActiveRecord::Base
   client_setting(:track_external_right_clicks, false)
   client_setting(:must_approve_users, false)
   client_setting(:ga_tracking_code, "")
+  client_setting(:ga_domain_name, "")
   client_setting(:new_topics_rollup, 1)
   client_setting(:enable_long_polling, true)
   client_setting(:polling_interval, 3000)
@@ -67,8 +68,9 @@ class SiteSetting < ActiveRecord::Base
   setting(:queue_jobs, !Rails.env.test?)
   setting(:crawl_images, !Rails.env.test?)
   setting(:enable_imgur, false)
-  setting(:imgur_api_key, '')
-  setting(:imgur_endpoint, "http://api.imgur.com/2/upload.json")
+  setting(:imgur_client_id, '')
+  setting(:imgur_client_secret, '')
+  setting(:imgur_endpoint, "http://api.imgur.com/3/image.json")
   setting(:max_image_width, 690)
   client_setting(:category_featured_topics, 6)
   setting(:topics_per_page, 30)
@@ -84,7 +86,9 @@ class SiteSetting < ActiveRecord::Base
   setting(:max_mentions_per_post, 10)
   setting(:newuser_max_mentions_per_post, 2)
 
-  setting(:uncategorized_name, 'uncategorized')
+  client_setting(:uncategorized_name, 'uncategorized')
+  client_setting(:uncategorized_color, 'AB9364');
+  client_setting(:uncategorized_text_color, 'FFFFFF');
 
   setting(:unique_posts_mins, Rails.env.test? ? 0 : 5)
 
@@ -93,7 +97,7 @@ class SiteSetting < ActiveRecord::Base
   setting(:rate_limit_create_post, 5)
   setting(:max_topics_per_day, 20)
   setting(:max_private_messages_per_day, 20)
-  setting(:max_likes_per_day, 30)
+  setting(:max_likes_per_day, 50)
   setting(:max_bookmarks_per_day, 20)
   setting(:max_flags_per_day, 20)
   setting(:max_edits_per_day, 30)

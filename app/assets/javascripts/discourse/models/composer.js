@@ -67,7 +67,7 @@ Discourse.Composer = Discourse.Model.extend({
 
   togglePreview: function() {
     this.toggleProperty('showPreview');
-    Discourse.KeyValueStore.set({ key: 'showPreview', value: this.get('showPreview') });
+    Discourse.KeyValueStore.set({ key: 'composer.showPreview', value: this.get('showPreview') });
   },
 
   // Import a quote from the post
@@ -310,11 +310,14 @@ Discourse.Composer = Discourse.Model.extend({
           composer.set('topic.draft_sequence', savedPost.draft_sequence);
         }
       }, function(error) {
-        var errors;
-        errors = $.parseJSON(error.responseText).errors;
-        promise.reject(errors[0]);
+        var response = $.parseJSON(error.responseText);
+        if (response && response.errors) {
+          promise.reject(response.errors[0]);
+        } else {
+          promise.reject(Em.String.i18n('generic_error'));
+        }
         post.set('cooked', oldCooked);
-        return composer.set('composeState', OPEN);
+        composer.set('composeState', OPEN);
       });
     });
   },
@@ -459,6 +462,14 @@ Discourse.Composer = Discourse.Model.extend({
       });
   },
 
+  flashDraftStatusForNewUser: function() {
+    var $draftStatus = $('#draft-status');
+    if (Discourse.get('currentUser.trust_level') === 0) {
+      $draftStatus.toggleClass('flash', true);
+      setTimeout(function() { $draftStatus.removeClass('flash'); }, 250);
+    }
+  },
+
   updateDraftStatus: function() {
     var $title = $('#reply-title'),
         $reply = $('#wmd-input');
@@ -467,6 +478,7 @@ Discourse.Composer = Discourse.Model.extend({
     if ($title.is(':focus')) {
       var titleDiff = this.get('missingTitleCharacters');
       if (titleDiff > 0) {
+        this.flashDraftStatusForNewUser();
         return this.set('draftStatus', Em.String.i18n('composer.min_length.need_more_for_title', { n: titleDiff }));
       }
     // 'reply' is focused

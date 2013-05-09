@@ -7,6 +7,14 @@ GIT
       rake-compiler
 
 GIT
+  remote: git://github.com/SamSaffron/redis-rack-cache.git
+  revision: 379ef30e31d4e185cb1d7f8badca0cc06403eba2
+  specs:
+    redis-rack-cache (1.2.1)
+      rack-cache (~> 1.2)
+      redis-store (~> 1.1.0)
+
+GIT
   remote: git://github.com/SamSaffron/sprockets.git
   revision: bacf2ec4d4d10cd8d1ab25a6360740314c512237
   branch: rails-compat
@@ -39,19 +47,19 @@ GIT
       railties (>= 3.1)
 
 GIT
-  remote: git://github.com/rails-api/active_model_serializers.git
-  revision: 329a38a7ddee4350f96d657256a5f6a277865291
-  specs:
-    active_model_serializers (0.7.0)
-      activemodel (>= 3.0)
-
-GIT
   remote: git://github.com/zhangyuan/vestal_versions
   revision: 0ea75ec4e269b5a9e609639919ade0f36381a446
   specs:
     vestal_versions (1.2.2)
       activerecord (>= 3.0.0)
       activesupport (>= 3.0.0)
+
+GIT
+  remote: https://github.com/rails-api/active_model_serializers.git
+  revision: fe84e0ad5268f1439123fd9a1f9fd12e25a54cd3
+  specs:
+    active_model_serializers (0.8.1)
+      activemodel (>= 3.0)
 
 PATH
   remote: vendor/gems/discourse_emoji
@@ -120,8 +128,6 @@ GEM
     activesupport (3.2.12)
       i18n (~> 0.6)
       multi_json (~> 1.0)
-    acts_as_paranoid (0.4.1)
-      activerecord (~> 3.2)
     airbrake (3.1.2)
       activesupport
       builder
@@ -391,9 +397,6 @@ GEM
     redis-rack (1.4.2)
       rack (~> 1.4.1)
       redis-store (~> 1.1.0)
-    redis-rack-cache (1.2.1)
-      rack-cache (~> 1.2)
-      redis-store (~> 1.1.0)
     redis-rails (3.2.3)
       redis-actionpack (~> 3.2.3)
       redis-activesupport (~> 3.2.3)
@@ -493,7 +496,6 @@ DEPENDENCIES
   active_attr
   active_model_serializers!
   activerecord-postgres-hstore
-  acts_as_paranoid
   airbrake (= 3.1.2)
   barber (= 0.3.0)
   better_errors
@@ -552,7 +554,7 @@ DEPENDENCIES
   rb-inotify (~> 0.9)
   redcarpet
   redis
-  redis-rack-cache
+  redis-rack-cache!
   redis-rails
   rest-client
   rinku

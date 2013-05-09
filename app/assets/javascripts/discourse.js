@@ -23,6 +23,10 @@ Discourse = Ember.Application.createWithMixins({
   highestSeenByTopic: {},
 
   getURL: function(url) {
+
+    // If it's a non relative URL, return it.
+    if (url.indexOf('http') === 0) return url;
+
     var u = (Discourse.BaseUri === undefined ? "/" : Discourse.BaseUri);
     if (u[u.length-1] === '/') {
       u = u.substring(0, u.length-1);
@@ -60,7 +64,7 @@ Discourse = Ember.Application.createWithMixins({
     if (user) {
       bus.callbackInterval = Discourse.SiteSettings.polling_interval;
       bus.enableLongPolling = true;
-      if (user.admin) {
+      if (user.admin || user.moderator) {
         bus.subscribe("/flagged_counts", function(data) {
           user.set('site_flagged_posts_count', data.total);
         });
@@ -129,7 +133,7 @@ Discourse = Ember.Application.createWithMixins({
     });
 
     $('#main').on('click.discourse', 'a', function(e) {
-      if (e.isDefaultPrevented() || e.metaKey || e.ctrlKey) return;
+      if (e.isDefaultPrevented() || e.shiftKey || e.metaKey || e.ctrlKey) return;
 
       var $currentTarget = $(e.currentTarget);
       var href = $currentTarget.attr('href');
@@ -173,7 +177,7 @@ Discourse = Ember.Application.createWithMixins({
   **/
   logout: function() {
     Discourse.KeyValueStore.abandonLocal();
-    Discourse.ajax(Discourse.getURL("/session/") + this.get('currentUser.username'), {
+    Discourse.ajax("/session/" + this.get('currentUser.username'), {
       type: 'DELETE'
     }).then(function() {
       // Reloading will refresh unbound properties
@@ -189,12 +193,59 @@ Discourse = Ember.Application.createWithMixins({
 
   /**
     Our own $.ajax method. Makes sure the .then method executes in an Ember runloop
-    for performance reasons.
+    for performance reasons. Also automatically adjusts the URL to support installs
+    in subfolders.
 
     @method ajax
   **/
   ajax: function() {
-    return $.ajax.apply(this, arguments);
+
+    var url, args;
+    if (arguments.length === 1) {
+      if (typeof arguments[0] === "string") {
+        url = arguments[0];
+        args = {};
+      } else {
+        args = arguments[0];
+        url = args.url;
+        delete args.url;
+      }
+    } else if (arguments.length === 2) {
+      url = arguments[0];
+      args = arguments[1];
+    }
+
+    if (args.success) {
+      console.warning("DEPRECATION: Discourse.ajax should use promises, received 'success' callback");
+    }
+    if (args.error) {
+      console.warning("DEPRECATION: Discourse.ajax should use promises, received 'error' callback");
+    }
+
+    return Ember.Deferred.promise(function (promise) {
+      var oldSuccess = args.success;
+      args.success = function(xhr) {
+        Ember.run(promise, promise.resolve, xhr);
+        if (oldSuccess) oldSuccess(xhr);
+      }
+
+      var oldError = args.error;
+      args.error = function(xhr) {
+
+        // If it's a parseerror, don't reject
+        if (xhr.status === 200) return args.success(xhr);
+
+        promise.reject(xhr);
+        if (oldError) oldError(xhr);
+      }
+
+      // We default to JSON on GET. If we don't, sometimes if the server doesn't return the proper header
+      // it will not be parsed as an object.
+      if (!args.type) args.type = 'GET';
+      if ((!args.dataType) && (args.type === 'GET')) args.dataType = 'json';
+
+      $.ajax(Discourse.getURL(url), args);
+    });
   },
 
   /**

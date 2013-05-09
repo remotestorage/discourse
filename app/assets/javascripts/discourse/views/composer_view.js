@@ -27,7 +27,7 @@ Discourse.ComposerView = Discourse.View.extend({
   }.property('content.composeState'),
 
   draftStatus: function() {
-    this.$('.draft-status').text(this.get('content.draftStatus') || "");
+    $('#draft-status').text(this.get('content.draftStatus') || "");
   }.observes('content.draftStatus'),
 
   // Disable fields when we're loading
@@ -305,6 +305,10 @@ Discourse.ComposerView = Discourse.View.extend({
           // 415 == media type not recognized (ie. not an image)
           case 415:
             bootbox.alert(Em.String.i18n('post.errors.only_images_are_supported'));
+            return;
+          // 422 == there has been an error on the server (mostly due to FastImage)
+          case 422:
+            bootbox.alert(data.jqXHR.responseText);
             return;
         }
       }

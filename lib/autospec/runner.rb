@@ -25,8 +25,8 @@ class Autospec::Runner
   watch(%r{^app/views/(.+)/.*\.(erb|haml)$})          { |m| "spec/requests/#{m[1]}_spec.rb" }
 
 
-  def self.run
-    self.new.run
+  def self.run(opts={})
+    self.new.run(opts)
   end
 
   def initialize
@@ -36,8 +36,7 @@ class Autospec::Runner
     start_service_queue
   end
 
-  def run
-
+  def run(opts = {})
     if already_running?(pid_file)
       puts "autospec appears to be running, it is possible the pid file is old"
       puts "if you are sure it is not running, delete #{pid_file}"
@@ -45,20 +44,21 @@ class Autospec::Runner
     end
     write_pid_file(pid_file, Process.pid)
 
-    # launching spork is forever going to take longer than this test
-    force_polling = true
-    Thread.new do
-      force_polling = force_polling?
-    end
-
     start_spork
     Signal.trap("HUP") {stop_spork; exit }
     Signal.trap("SIGINT") {stop_spork; exit }
 
-    puts "Forced polling (slower) - inotify does not work on network filesystems, use local filesystem to avoid" if force_polling
+    puts "Forced polling (slower) - inotify does not work on network filesystems, use local filesystem to avoid" if opts[:force_polling]
+
+    options = {filter: /^app|^spec|^lib/, relative_paths: true}
+
+    if opts[:force_polling]
+      options[:force_polling] = true
+      options[:latency] = opts[:latency] || 3
+    end
 
     Thread.start do
-      Listen.to('.', force_polling: force_polling, filter: /^app|^spec|^lib/, relative_paths: true) do |modified, added, removed|
+      Listen.to('.', options ) do |modified, added, removed|
         process_change([modified, added].flatten.compact)
       end
     end
@@ -68,7 +68,37 @@ class Autospec::Runner
       @signal.signal
     end
 
-    Process.wait
+    spork_running = true
+    Thread.new do
+      Process.wait(@spork_pid)
+      spork_running = false
+    end
+
+    while spork_running
+
+      STDIN.gets
+
+      if @queue.length == 0
+        @queue << ['spec', 'spec']
+        @signal.signal
+      else
+        specs = failed_specs(:delete => false)
+        puts
+        puts
+        if specs.length == 0
+          puts "No specs have failed yet!"
+          puts
+        else
+          puts "The following specs have failed: "
+          specs.each do |s|
+            puts s
+          end
+          puts
+        end
+      end
+    end
+
+    puts "Spork has been terminated, exiting"
 
   rescue => e
     puts e
@@ -84,7 +114,7 @@ class Autospec::Runner
         sleep(0.001)
       end
     end
-    t.join
+    t.join rescue nil
   end
 
   def force_polling?
@@ -92,10 +122,11 @@ class Autospec::Runner
 
     begin
       require 'rb-inotify'
+      require 'fileutils'
       n = INotify::Notifier.new
-      FileUtils.touch('tmp/test_polling')
+      FileUtils.touch('./tmp/test_polling')
 
-      n.watch("./tmp/test_polling"){works = true }
+      n.watch("./tmp", :modify, :attrib){ works = true }
       quit = false
       Thread.new do
         while !works && !quit
@@ -105,9 +136,10 @@ class Autospec::Runner
         end
       end
       sleep 0.01
-      File.unlink('tmp/test_polling')
 
+      FileUtils.touch('./tmp/test_polling')
       wait_for(100) { works }
+      File.unlink('./tmp/test_polling')
       n.stop
       quit = true
     rescue LoadError
@@ -218,12 +250,12 @@ class Autospec::Runner
     end
   end
 
-  def failed_specs
+  def failed_specs(opts={:delete => true})
     specs = []
     path = './tmp/rspec_result'
     if File.exist?(path)
       specs = File.open(path) { |file| file.read.split("\n") }
-      File.delete(path)
+      File.delete(path) if opts[:delete]
     end
 
     specs
@@ -293,7 +325,7 @@ class Autospec::Runner
       sleep 1
     end
 
-    @spork_pid = Process.spawn("RAILS_ENV=test bundle exec spork")
+    @spork_pid = Process.spawn({'RAILS_ENV' => 'test'}, "bundle exec spork")
     write_pid_file(spork_pid_file, @spork_pid)
 
     running = false

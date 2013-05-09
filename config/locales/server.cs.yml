@@ -48,6 +48,17 @@ cs:
   rss_topics_in_category: "RSS feed témat z kategorie '%{category}'"
   author_wrote: "%{author} napsal:"
 
+  groups:
+    default_names:
+      admins: "administrátoři"
+      moderators: "moderátoři"
+      staff: "personál"
+      trust_level_1: "věrohodnost_1"
+      trust_level_2: "věrohodnost_2"
+      trust_level_3: "věrohodnost_3"
+      trust_level_4: "věrohodnost_4"
+      trust_level_5: "věrohodnost_5"
+
   education:
     until_posts:
       one: "příspěvek"
@@ -105,7 +116,7 @@ cs:
 
   trust_levels:
     newuser:
-      title: "návštěvník"
+      title: "nový uživatel"
     basic:
       title: "základní uživatel"
     regular:
@@ -364,6 +375,21 @@ cs:
       title: "Uživatelská upozornění"
       xaxis: "Den"
       yaxis: "Počet soukromých zpráv"
+    top_referrers:
+      title: "Odkazovatelé"
+      xaxis: "Uživatel"
+      num_clicks: "Kliknutí"
+      num_topics: "Témata"
+    top_traffic_sources:
+      title: "Zdroje provozu"
+      xaxis: "Doména"
+      num_clicks: "Kliknutí"
+      num_topics: "Témata"
+      num_users: "Uživatelé"
+    top_referred_topics:
+      title: "Odkazovaná témata"
+      xaxis: "Témata"
+      num_clicks: "Kliknutí"
 
   dashboard:
     rails_env_warning: "Váš server běží v módu %{env}."
@@ -378,6 +404,9 @@ cs:
     github_config_warning: 'Server je nakonfigurován, aby povoloval registraci a přihlášení přes GitHub (enable_github_logins), ale nejsou nastaveny hodnoty "client id" a "secret". Navštivte <a href="/admin/site_settings">nastevení webu</a> a opravte nastavení. <a href="https://github.com/discourse/discourse/wiki/The-Discourse-Admin-Quick-Start-Guide" target="_blank">Pro více informací si přečtěte tento návod</a>.'
     failing_emails_warning: "%{num_failed_jobs} emailů se nepodařilo odeslat. Zkontrolujte soubor config/production.rb a ujistěte se, že máte správné nastavení config.action_mailer."
     default_logo_warning: "Nenastavili jste si vlastní logo pro váš web. Aktualizujte hodnoty logo_url, logo_small_url, a favicon_url v <a href='/admin/site_settings'>Nastavení webu</a>."
+    contact_email_missing: "Neposkytli jste kontaktní email pro váš web. Prosím, aktualizujte položku contact_email v <a href='/admin/site_settings'>Nastavení webu</a>."
+    contact_email_invalid: "Kontaktní email je neplatný. The site contact email is invalid. Prosím, aktualizujte položku contact_email v <a href='/admin/site_settings'>Nastavení webu</a>."
+    title_nag: "Název webu je nastaven na výchozí hodnotu. Prosím, změňte název webu na skutečný název v <a href='/admin/site_settings'>Nastavení webu</a>."
 
   content_types:
     education_new_reply:
@@ -415,6 +444,7 @@ cs:
     discourse_org_access_key: "Přístupový klíč pro používání registru uživatelským jmen na discourse.org"
     educate_until_posts: "Zobrazovat pop-up okno s nápovědou pro psaní příspěvků, dokud uživatel nezašle tolik příspěvků"
     title: "Název tohoto webu"
+    contact_email: "Emailová adresa někoho, kdo může být kontaktován ohledně tohoto webu. Důležitá upozornění z Discourse.org ohledně kritických aktualizací budou zasílána na tento email."
     company_full_name: "Plné jméno společnosti, která provozuje tento web, používá se v dokumentech jako je /tos"
     company_short_name: "Krátké jméno společnosti, která provozuje tento web, používá se v dokumentech jako je /tos"
     company_domain: "Doménové jméno vlastněné společností, která provozuje tento web, používá se v dokumentech jako je /tos"
@@ -424,7 +454,8 @@ cs:
     crawl_images: "Povolit získávání obrázků z webů třetích stran"
     ninja_edit_window: "Jak rychle smíte udělat změnu, aniž by se uložila jako nová verze"
     enable_imgur: "Používat imgur pro ukládání obrázků, nehostovat obrázky lokálně"
-    imgur_api_key: "Api klíč pro imgur.com - vyžadováno pro upload obrázků"
+    imgur_client_id: "Přístupový klíč 'client ID' pro imgur.com - vyžadováno pro upload obrázků"
+    imgur_client_secret: "Přístupový klíč 'client secret' pro imgur.com - vyžadováno pro upload obrázků"
     imgur_endpoint: "Koncový bod pro upload obrázků na imgur.com"
     max_image_width: "Maximální šířka obrázku v příspěvku"
     category_featured_topics: "Počet témat zobrazených v seznamu kategorií"
@@ -463,6 +494,7 @@ cs:
     post_undo_action_window_mins: "Počet sekund, během kterých smí uživatelé vrátit akce na příspěvcích (líbí se, nahlášení, atd.)"
     must_approve_users: "Administrátoři musí schválit všechny uživatele, než získají přístup"
     ga_tracking_code: "Kód pro sledování přes 'Google analytics', např. UA-12345678-9; viz http://google.com/analytics"
+    ga_domain_name: "Doménové jméno pro Google analytics, např. mysite.com; viz http://google.com/analytics"
     top_menu: "Určuje, které položky se zobrazí v navigaci na hlavní stránce a v jakém pořadí. Příklad: latest|hot|read|favorited|unread|new|posted|categories"
     post_menu: "Určuje, které položky se zobrazí v menu u příspěvku a v jakém pořadí. Příklad: like|edit|flag|delete|share|bookmark|reply"
     share_links: "Určuje, které položky se zobrazí ve sdílecím dialogu a v jakém pořadí. Příklad: twitter|facebook|google+"
@@ -506,7 +538,9 @@ cs:
     active_user_rate_limit_secs: "Jak často aktualizujeme informaci o poslední návštěvě uživatelů, v sekundách"
     previous_visit_timeout_hours: "Kolik času musí uplynout v hodinách, než je návštěva uživatele považována za uplynulou"
 
-    uncategorized_name: "Výchozí kategorie pro témata, která nemají nastavou kategorii"
+    uncategorized_name: "Výchozí kategorie pro témata, která nemají nastavenou kategorii"
+    uncategorized_color: "Barva pozadí štítku kategorie pro témata, která nemají nastavenou kategorii"
+    uncategorized_text_color: "Barva textu na štítku kategorie pro témata, která nemají nastavenou kategorii"
 
     rate_limit_create_topic: "Počet sekund, které je nutné počkat od vytvoření tématu, než smí uživatel vytvořit další"
     rate_limit_create_post: "Počet sekund, které je nutné počkat od zaslání příspěvku, než smí uživatel zaslat další"
@@ -552,13 +586,13 @@ cs:
     title_min_entropy: "Minimální entropie (unikátní znaky) požadovaná v názvu tématu"
     body_min_entropy: "Minimální entropie (unikátní znaky) požadovaná v obsahu příspěvku"
 
-    title_fancy_entities: "Převádět HTML entity v názvech témat"
+    title_fancy_entities: "Převádět běžné ASCII znaky na HTML entity v názvech témat, ve stylu SmartyPants http://daringfireball.net/projects/smartypants/"
 
     min_title_similar_length: "Minimální délka názvu tématu, než budou hledána podobná témata"
     min_body_similar_length: "Minimální délka těla příspěvku, než budou hledána podobná témata"
 
     category_colors: "Seznam hexadecimálních barev oddělený svislítkem (|) pro barvy kategorií"
-    max_upload_size_kb: "Maximální povolená velikost nahrávaných souborů v kb - nezapomeňte tento limit změnit v nginx (client_max_body_size) / apache a na proxy serverech."
+    max_upload_size_kb: "Maximální povolená velikost nahrávaných souborů v kB - nezapomeňte tento limit změnit v nginx (client_max_body_size) / apache a na proxy serverech."
     max_similar_results: "Kolik podobných témat se má zobrazovat uživateli, když vytváří nové téma"
 
     title_prettify: "Zabrání běžným překlepům a chybám v názvu tématu, včetně psaní velkými písmeny, malé písmeno na začátku, vícenásobné vykřičníky a otazníky, atd."
@@ -566,6 +600,9 @@ cs:
     topic_views_heat_low: "Počet zobrazení, po nichž bude popularita tématu nízká."
     topic_views_heat_medium: "Počet zobrazení, po nichž bude popularita tématu střední."
     topic_views_heat_high: "Počet zobrazení, po nichž bude popularita tématu vysoká."
+
+    tos_url: "Pokud máte dokument 'Podmínky Používání' hostovaný samostatně, napište sem jeho plnou URL."
+    privacy_policy_url: "Pokud máte dokument 'Ochrana Soukromí' hostovaný samostatně, napište sem jeho plnou URL."
 
   notification_types:
     mentioned: "%{display_username} vás zmínil v %{link}"
@@ -589,31 +626,6 @@ cs:
   most_posts: "Více příspěvků"
   most_recent_poster: "Poslední zasilatel"
   frequent_poster: "Častý zasilatel"
-
-  user_action_descriptions:
-    bookmarks: "Záložky"
-    topics: "Témata"
-    likes_received: "Obdržené 'líbí se mi'"
-    likes_given: "Rozdané 'líbí se mi'"
-    responses: "Odpovědi"
-    topic_responses: "Odpovědi v tématu"
-    posts: "Příspěvky"
-    mentions: "Zmínky"
-    quotes: "Citáty"
-    edits: "Úpravy"
-    favorites: "Oblíbené"
-    sent_items: "Odeslané položky"
-    inbox: "Příchozí zprávy"
-
-    was_liked: "se líbí"
-    liked: "se mu líbí"
-    bookmarked: "přidáno do záložek"
-    posted: "zaslal"
-    responded_to: "odpověděl na"
-    mentioned: "zmínil"
-    quoted: "citoval"
-    favorited: "přidal do oblíbených"
-    edited: "editoval"
 
   move_posts:
     moderator_post:
@@ -951,3 +963,9 @@ cs:
     miscellaneous: "Toto ujednání tvoří celou dohodu mezi %{company_short_name} a vámi ohledně zmiňované věci a smí být změněno pouze písemným dodatkem podepsaným pověřeným jednatelem společnosti %{company_short_name}, nebo zveřejněním revidované verze tohoto dokumentu. Provoz tohoto webu, jeho používání a jakýkoliv přístup na něj se řídí platnými zákony České republiky. Jakékoliv spory v souvislosti v tímto webem budou řešeny u soudů v České republice a používáním této služby souhlasíte se soudní pravomocí těchto soudů."
 
   deleted: 'smazáno'
+
+  upload:
+    image:
+      fetch_failure: "Bohužel, nastala chybí při získávání obrázku."
+      unknown_image_type: "Bohužel, soubor, který se snažíte nahrát, zřejmě není obrázek."
+      size_not_found: "Bohužel se nepodařilo zjistit velikost obrázku. Není soubor s obrázkem poškozený?"

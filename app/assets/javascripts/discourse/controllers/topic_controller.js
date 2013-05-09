@@ -83,6 +83,7 @@ Discourse.TopicController = Discourse.ObjectController.extend({
     if (!modalController) return;
 
     modalController.show(Discourse.MoveSelectedView.create({
+      topicController: this,
       topic: this.get('content'),
       selectedPosts: this.get('selectedPosts')
     }));
@@ -90,13 +91,12 @@ Discourse.TopicController = Discourse.ObjectController.extend({
 
   deleteSelected: function() {
     var topicController = this;
-    return bootbox.confirm(Em.String.i18n("post.delete.confirm", {
-      count: this.get('selectedCount')
-    }), function(result) {
+    return bootbox.confirm(Em.String.i18n("post.delete.confirm", { count: this.get('selectedCount')}), function(result) {
       if (result) {
         var selectedPosts = topicController.get('selectedPosts');
         Discourse.Post.deleteMany(selectedPosts);
         topicController.get('content.posts').removeObjects(selectedPosts);
+        topicController.toggleMultiSelect();
       }
     });
   },
@@ -135,12 +135,19 @@ Discourse.TopicController = Discourse.ObjectController.extend({
 
   // Topic related
   reply: function() {
-    this.get('controllers.composer').open({
-      topic: this.get('content'),
-      action: Discourse.Composer.REPLY,
-      draftKey: this.get('content.draft_key'),
-      draftSequence: this.get('content.draft_sequence')
-    });
+    var composerController = this.get('controllers.composer');
+    if (composerController.get('content.topic.id') === this.get('content.id') &&
+        composerController.get('content.action') === Discourse.Composer.REPLY) {
+      composerController.set('content.post', null);
+      composerController.set('content.composeState', Discourse.Composer.OPEN);
+    } else {
+      composerController.open({
+        topic: this.get('content'),
+        action: Discourse.Composer.REPLY,
+        draftKey: this.get('content.draft_key'),
+        draftSequence: this.get('content.draft_sequence')
+      });
+    }
   },
 
   toggleParticipant: function(user) {
@@ -425,7 +432,7 @@ Discourse.TopicController = Discourse.ObjectController.extend({
 
   deletePost: function(post) {
     // Moderators can delete posts. Regular users can only create a deleted at message.
-    if (Discourse.get('currentUser.moderator')) {
+    if (Discourse.get('currentUser.staff')) {
       post.set('deleted_at', new Date());
     } else {
       post.set('cooked', Discourse.Markdown.cook(Em.String.i18n("post.deleted_by_author")));

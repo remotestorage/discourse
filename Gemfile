@@ -5,7 +5,7 @@ end
 
 source 'https://rubygems.org'
 
-gem 'active_model_serializers', git: 'git://github.com/rails-api/active_model_serializers.git'
+gem 'active_model_serializers', git: 'https://github.com/rails-api/active_model_serializers.git'
 
 # we had issues with latest, stick to the rev till we figure this out
 # PR that makes it all hang together welcome
@@ -20,7 +20,6 @@ gem 'simple_handlebars_rails', path: 'vendor/gems/simple_handlebars_rails'
 
 gem 'redcarpet', require: false
 gem 'activerecord-postgres-hstore'
-gem 'acts_as_paranoid'
 gem 'active_attr' # until we get ActiveModel::Model with Rails 4
 gem 'airbrake', '3.1.2', require: false # errbit is broken with 3.1.3 for now
 gem 'clockwork', require: false
@@ -140,7 +139,9 @@ gem 'lru_redux'
 gem 'rack-mini-profiler', require: false  # require: false #, git: 'git://github.com/SamSaffron/MiniProfiler'
 
 # used for caching, optional
-gem 'redis-rack-cache', require: false
+# redis-rack-cache is missing a sane expiry policy, it hogs redis
+# https://github.com/jodosha/redis-store/pull/183
+gem 'redis-rack-cache', :git => 'git://github.com/SamSaffron/redis-rack-cache.git', require: false
 gem 'rack-cache', require: false
 
 gem 'rack-cors', require: false

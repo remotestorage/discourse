@@ -57,6 +57,7 @@
             {{#if loadingAbove}}
               <div class='spinner'>{{i18n loading}}</div>
             {{/if}}
+
             {{collection itemViewClass="Discourse.PostView" contentBinding="content.posts" topicViewBinding="view"}}
 
             {{#if loadingBelow}}
@@ -134,6 +135,6 @@
 {{render share}}
 {{render quoteButton}}
 
-{{#if Discourse.currentUser.admin}}
+{{#if Discourse.currentUser.staff}}
   {{render topicAdminMenu content}}
 {{/if}}

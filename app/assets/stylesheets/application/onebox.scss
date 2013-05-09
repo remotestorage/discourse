@@ -46,7 +46,7 @@ a.loading-onebox {
       margin: 0px !important;
     }
     img.thumbnail {
-      width: 25%;
+      max-width: 25%;
       height: auto;
     }
     code {
@@ -66,6 +66,21 @@ a.loading-onebox {
         padding-left: 33px;
         float: left;
       }
+    }
+  }
+}
+
+// RottenTomatoes Onebox
+.onebox-result {
+  .onebox-result-body {
+    img.verdict { 
+      float: none; 
+      margin-right: 7px;
+    }
+    img.popcorn {
+      float: none;
+      margin-left: 20px;
+      margin-right: 5px;
     }
   }
 }

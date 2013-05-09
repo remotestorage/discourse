@@ -34,6 +34,7 @@ nl:
     you: Jij
     or: of
     now: zonet
+    read_more: lees verder
 
     suggested_topics:
       title: Aanbevolen topics
@@ -53,12 +54,40 @@ nl:
     saving: Wordt opgeslagen...
     saved: Opgeslagen!
 
-    user_action_descriptions:
-      "6": 'reacties'
+    user_action:
+      user_posted_topic: "<a href='{{userUrl}}'>{{user}}</a> plaatste <a href='{{topicUrl}}'>deze topic</a>"
+      you_posted_topic: "<a href='{{userUrl}}'>Jij</a> plaatste <a href='{{topicUrl}}'>deze topic</a>"
+      user_replied_to_post: "<a href='{{userUrl}}'>{{user}}</a> reageerde op <a href='{{postUrl}}'>{{post_number}}</a>"
+      you_replied_to_post: "<a href='{{userUrl}}'>Jij</a> reageerde op <a href='{{postUrl}}'>{{post_number}}</a>"
+      user_replied_to_topic: "<a href='{{userUrl}}'>{{user}}</a> reageerde op <a href='{{topicUrl}}'>the topic</a>"
+      you_replied_to_topic: "<a href='{{userUrl}}'>Jij</a> reageerde op <a href='{{topicUrl}}'>the topic</a>"
+
+      user_mentioned_user: "<a href='{{user1Url}}'>{{user}}</a> noemde <a href='{{user2Url}}'>{{another_user}}</a>"
+      user_mentioned_you: "<a href='{{user1Url}}'>{{user}}</a> noemde <a href='{{user2Url}}'>jou</a>"
+      you_mentioned_user: "<a href='{{user1Url}}'>Jij</a> noemde <a href='{{user2Url}}'>{{user}}</a>"
+
+      posted_by_user: "Geplaatst door <a href='{{userUrl}}'>{{user}}</a>"
+      posted_by_you: "Geplaatst door <a href='{{userUrl}}'>jou</a>"
+      sent_by_user: "Verzonden door <a href='{{userUrl}}'>{{user}}</a>"
+      sent_by_you: "Verzonden door <a href='{{userUrl}}'>jou</a>"
+
+    user_action_groups:
+      "1": "Likes gegeven"
+      "2": "Likes ontvangen"
+      "3": "Bladwijzers"
+      "4": "Topics"
+      "5": "Antwoorden"
+      "6": "Reacties"
+      "7": "Genoemd"
+      "9": "Citaten"
+      "10": "Favorieten"
+      "11": "Wijzigingen"
+      "12": "Verzonden items"
+      "13": "Inbox"
 
     user:
       profile: Profiel
-      title: Gebruiker
+      title: Lid
       mute: Negeer
       edit: Wijzig voorkeuren
       download_archive: download een archief van mijn berichten
@@ -71,6 +100,9 @@ nl:
       trust_level: Trustlevel
       external_links_in_new_tab: Open alle externe links in een nieuw tabblad
       enable_quoting: Activeer antwoord-met-citaat voor geselecteerde tekst
+
+      moderator: "{{user}} is een moderator"
+      admin: "{{user}} is een admin"
 
       change_password:
         action: wijzig
@@ -163,7 +195,7 @@ nl:
 
       invited:
         title: Uitnodigingen
-        user: Uitgenodigde gebruiker
+        user: Uitgenodigd lid
         none: "{{username}} heeft nog geen mensen uitgenodigd voor deze site."
         redeemed: Verzilverde uitnodigingen
         redeemed_at: Verzilverd op
@@ -220,7 +252,7 @@ nl:
       disable: "Schakel naar normale weergave"
 
     private_message_info:
-      title: 'Privé-conversatie'
+      title: 'Privé-bericht'
       invite: Nodig anderen uit...
 
     email: E-mail
@@ -296,9 +328,9 @@ nl:
       create_topic: Maak topic
       create_pm: Maak privé-bericht
 
-      users_placeholder: Voeg een gebruiker toe
+      users_placeholder: Voeg een lid toe
       title_placeholder: Typ hier je title. Beschrijf in één korte zin waar deze discussie over gaat.
-      reply_placeholder: Typ hier je reactie. Gebruik Markdown of BBCode voor de tekstopmaak. Sleep of plak een afbeelding hierin om deze te uploaden."
+      reply_placeholder: Typ hier. Gebruik Markdown of BBCode voor de tekstopmaak. Sleep of plak een afbeelding hierin om deze te uploaden."
       view_new_post: Bekijk je nieuwe bericht.
       saving: Opslaan...
       saved: Opgeslagen!
@@ -347,9 +379,9 @@ nl:
       edited: "<i title='gewijzigd' class='icon icon-pencil'></i> {{username}} {{link}}"
       liked: "<i title='leuk gevonden' class='icon icon-heart'></i> {{username}} {{link}}"
       private_message: "<i class='icon icon-envelope-alt' title='privé-bericht'></i> {{username}} {{link}}"
-      invited_to_private_message: "{{username}} heeft je uitgenodigd voor een privé-conversatie: {{link}}"
+      invited_to_private_message: "<i class='icon icon-envelope-alt' title='privé-bericht'></i> {{username}} {{link}}"
       invitee_accepted: "<i title='heeft je uitnodiging geaccepteerd' class='icon icon-signin'></i> {{username}} heeft je uitnodiging geaccepteerd en heeft zich ingeschreven om deel te nemen."
-      moved_post: "<i title='bericht verplaatst' class='icon icon-arrow-right'></i> {{username}} heeft je post verplaast naar {{link}}"
+      moved_post: "<i title='bericht verplaatst' class='icon icon-arrow-right'></i> {{username}} verplaatst naar {{link}}"
       total_flagged: aantal gemarkeerde berichten
 
     image_selector:
@@ -365,7 +397,7 @@ nl:
       uploading_image: Afbeelding uploaden
 
     search:
-      title: "zoek naar topics, posts, gebruikers of categoriëen"
+      title: "zoek naar topics, posts, leden of categoriëen"
       placeholder: typ je zoekterm hier
       no_results: Geen resultaten gevonden.
       searching: Zoeken...
@@ -409,7 +441,7 @@ nl:
       create_in: "Maak een {{categoryName}} topic"
       create: Maak topic
       create_long: Maak een nieuw topic
-      private_message: Start een privé-gesprek
+      private_message: Stuur een privé-bericht
       list: Topics
       new: nieuw topic
       title: Topic
@@ -507,12 +539,12 @@ nl:
       inviting: Uitnodigen...
 
       invite_private:
-        title: Nodig uit voor privé-conversatie
+        title: Stuur een privé-bericht
         email_or_username: E-mail of gebruikersnaam van genodigde
         email_or_username_placeholder: e-mailadres of gebruikersnaam
         action: Uitnodigen
-        success: "Bedankt! We hebben deze gebruiker uitgenodigd om deel te nemen aan deze privé-conversatie."
-        error: "Sorry, er is iets misgegaan bij het uitnodigen van deze gebruiker"
+        success: "Bedankt! We hebben deze persoon dit privé-bericht gestuurd."
+        error: "Sorry, er is iets misgegaan bij het uitnodigen van deze persoon"
 
       invite_reply:
         title: Nodig vrienden uit om te reageren
@@ -521,7 +553,7 @@ nl:
         email: We zullen je vrienden een korte e-mail sturen waardoor zij op deze topic kunnen reageren door op een link te klikken.
         email_placeholder: e-mailadres
         success: 'Bedankt! We hebben een uitnodiging verstuurd naar <b>{{email}}</b>. We laten je direct weten wanneer ze je uitnodiging hebben geaccepteerd. Check de "Uitnodigingen"-tab op je gebruikerspagina om bij te houden wie je hebt uitgenodigd.'
-        error: "Sorry, we kunnen deze persoon niet uitnodigen. Wellicht is deze al een gebruiker op onze site?"
+        error: "Sorry, we kunnen deze persoon niet uitnodigen. Wellicht is deze al een lid op onze site?"
 
       login_reply: Log in om te reageren
 
@@ -531,8 +563,8 @@ nl:
           one: één bericht
           other: "{{count}} berichten"
         by_n_users:
-          one: van één specifieke gebruiker
-          other: "van {{count}} specifieke gebruikers"
+          one: van één specifiek lid
+          other: "van {{count}} specifieke leden"
 
         best_of: "Je ziet momenteel alleen {{n_best_posts}} {{of_n_posts}}"
         n_best_posts:
@@ -595,7 +627,7 @@ nl:
         reply: reageer op dit bericht
         like: vind dit bericht leuk
         edit: bewerk dit bericht
-        flag: meld dit bericht aan de moderators
+        flag: meld dit bericht of stuur er een notificatie over
         delete: verwijder dit bericht
         undelete: herstel dit bericht
         share: deel een link naar dit bericht
@@ -626,8 +658,10 @@ nl:
           off_topic: "{{icons}} markeerden dit als off-topic"
           spam: "{{icons}} markeerden dit als spam"
           inappropriate: "{{icons}} markeerden dit als ongepast"
-          notify_moderators: "{{icons}} markeeder dit"
-          notify_user: "{{icons}} begonnen een privé-conversatie"
+          notify_moderators: "{{icons}} lichtte moderators in"
+          notify_moderators_with_url: "{{icons}} <a href='{{postUrl}}'>lichtte moderators in</a>" 
+          notify_user: "{{icons}} verstuurde een privé-bericht"
+          notify_user_with_url: "{{icons}} verstuurde een <a href='{{postUrl}}'>privé-bericht</a>" 
           bookmark: "{{icons}} voegden dit toe aan hun favorieten"
           like: "{{icons}} vinden dit leuk"
           vote: "{{icons}} hebben hier op gestemd"
@@ -636,7 +670,7 @@ nl:
           spam: Jij markeerde dit als spam
           inappropriate: Jij markeerde dit als ongepast
           notify_moderators: Jij markeerde dit voor moderatie
-          notify_user: Jij begon een privé-conversatie met deze gebruiker
+          notify_user: Jij stuurde een privé-bericht naar deze persoon
           bookmark: Jij voegde dit bericht toe aan je favorieten
           like: Jij vindt dit leuk
           vote: Jij hebt op dit bericht gestemd
@@ -654,8 +688,8 @@ nl:
             one: "Jij en iemand anders markeerden dit voor moderatie"
             other: "Jij en {{count}} anderen markeerden dit voor moderatie"
           notify_user:
-            one: "Jij en iemand anders begonnen een privé-conversatie met deze gebruiker"
-            other: "Jij en {{count}} anderen begonnen een privé-conversatie met deze gebruiker"
+            one: "Jij en iemand anders stuurden een privé-bericht naar deze persoon"
+            other: "Jij en {{count}} anderen stuurden een privé-bericht naar deze persoon"
           bookmark:
             one: "Jij en iemand anders voegden dit bericht toe aan de favorieten"
             other: "Jij en {{count}} anderen voegden dit bericht toe aan de favorieten"
@@ -679,8 +713,8 @@ nl:
             one: "Iemand heeft dit bericht gemarkeerd voor moderatie"
             other: "{{count}} Mensen hebben dit bericht gemarkeerd voor moderatie"
           notify_user:
-            one: "Iemand is een privé-conversatie begonnen met deze gebruiker"
-            other: "{{count}} Mensen zijn een privé-conversatie begonnen met deze gebruiker"
+            one: "Iemand stuurde een privé-bericht naar deze persoon"
+            other: "{{count}} Mensen stuurden een privé-bericht naar deze persoon"
           bookmark:
             one: "Iemand heeft dit bericht toegevoegd aan zijn favorieten"
             other: "{{count}} Mensen hebben dit bericht toegevoegd aan hun favorieten"
@@ -705,11 +739,13 @@ nl:
       none: (geen categorie)
       edit: bewerk
       edit_long: Bewerk categorie
+      edit_uncategorized: "Wijzig ongecategoriseerd"
       view: Bekijk topics in categorie
       delete: Verwijder categorie
       create: Maak categorie
       save: Bewaar categorie
       creation_error: Er ging bij het maken van de categorie iets mis.
+      save_error: Er ging iets mis bij het opslaan van de categorie.
       more_posts: "bekijk alle {{posts}}..."
       name: Naam categorie
       description: Omschrijving
@@ -850,7 +886,7 @@ nl:
           view_chart: Bekijk als staafdiagram
 
       commits:
-        latest_changes: "Laatste wijzigingen: werk regelmatig bij!"
+        latest_changes: "Laatste wijzigingen: update regelmatig!"
         by: door
 
       flags:
@@ -867,7 +903,7 @@ nl:
       groups:
         title: Groepen
         edit: Wijzig groepen
-        selector_placeholder: voeg gebruikers toe
+        selector_placeholder: voeg leden toe
 
       api:
         title: API
@@ -904,7 +940,7 @@ nl:
         invalid: "Sorry, maar als deze gebruiker mag je niet inloggen."
 
       users:
-        title: Gebruikers
+        title: Leden
         create: Voeg beheerder toe
         last_emailed: laatste mail verstuurd naar
         not_found: "Sorry, deze gebruikersnaam bestaat niet in ons systeem."
@@ -913,8 +949,19 @@ nl:
         pending: Te beoordelen
         approved: Goedgekeurd?
         approved_selected:
-          one: accepteer gebruiker
-          other: "accepteer {{count}} gebruikers"
+          one: accepteer lid
+          other: "accepteer {{count}} leden"
+        titles:
+          active: 'Actieve leden'
+          new: 'Nieuwe leden'
+          pending: 'Nog niet geaccepteerde leden'
+          newuser: 'Leden met Trust Level 0 (Nieuw lid)'
+          basic: 'Leden met Trust Level 1 (Lid)'
+          regular: 'Leden met Trust Level 2 (Regulier lid)'
+          leader: 'Leden met Trust Level 3 (Leider)'
+          elder: 'Leden met Trust Level 4 (Stamoudste)'
+          admins: Administrators
+          moderators: Moderators
 
       user:
         ban_failed: "Er ging iets fout met het blokkeren van deze gebruiker: {{error}}"
