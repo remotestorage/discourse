@@ -9,12 +9,10 @@
 Discourse.Post = Discourse.Model.extend({
 
   shareUrl: function() {
-    var user = Discourse.get('currentUser');
-    if (this.get('postnumber') === 1){
-      return this.get('topic.url');
-    } else {
-      return this.get('url') + (user ? '?u=' + user.get('username_lower') : '');
-    }
+    if (this.get('postnumber') === 1) return this.get('topic.url');
+
+    var user = Discourse.User.current();
+    return this.get('url') + (user ? '?u=' + user.get('username_lower') : '');
   }.property('url'),
 
   new_user: function() {
@@ -52,7 +50,7 @@ Discourse.Post = Discourse.Model.extend({
 
   postElementId: function() {
     return "post_" + (this.get('post_number'));
-  }.property(),
+  }.property('post_number'),
 
   // The class for the read icon of the post. It starts with read-icon then adds 'seen' or
   // 'last-read' if the post has been seen or is the highest post number seen so far respectively.
@@ -124,11 +122,11 @@ Discourse.Post = Discourse.Model.extend({
 
   flagsAvailable: function() {
     var _this = this;
-    var flags = Discourse.get('site.flagTypes').filter(function(item) {
+    var flags = Discourse.Site.instance().get('flagTypes').filter(function(item) {
       return _this.get("actionByName." + (item.get('name_key')) + ".can_act");
     });
     return flags;
-  }.property('Discourse.site.flagTypes', 'actions_summary.@each.can_act'),
+  }.property('actions_summary.@each.can_act'),
 
   actionsHistory: function() {
     if (!this.present('actions_summary')) return null;
@@ -153,7 +151,7 @@ Discourse.Post = Discourse.Model.extend({
         }
       }).then(function(result) {
         // If we received a category update, update it
-        if (result.category) Discourse.get('site').updateCategory(result.category);
+        if (result.category) Discourse.Site.instance().updateCategory(result.category);
         if (complete) complete(Discourse.Post.create(result.post));
       }, function(result) {
         // Post failed to update
@@ -168,7 +166,8 @@ Discourse.Post = Discourse.Model.extend({
         archetype: this.get('archetype'),
         title: this.get('title'),
         image_sizes: this.get('imageSizes'),
-        target_usernames: this.get('target_usernames')
+        target_usernames: this.get('target_usernames'),
+        auto_close_days: this.get('auto_close_days')
       };
 
       // Put the metaData into the request
@@ -219,7 +218,7 @@ Discourse.Post = Discourse.Model.extend({
       obj.actions_summary.each(function(a) {
         var actionSummary;
         a.post = post;
-        a.actionType = Discourse.get("site").postActionTypeById(a.id);
+        a.actionType = Discourse.Site.instance().postActionTypeById(a.id);
         actionSummary = Discourse.ActionSummary.create(a);
         post.get('actions_summary').pushObject(actionSummary);
         lookup.set(a.actionType.get('name_key'), actionSummary);
@@ -277,10 +276,9 @@ Discourse.Post.reopenClass({
     if (result.actions_summary) {
       lookup = Em.Object.create();
       result.actions_summary = result.actions_summary.map(function(a) {
-        var actionSummary;
         a.post = result;
-        a.actionType = Discourse.get("site").postActionTypeById(a.id);
-        actionSummary = Discourse.ActionSummary.create(a);
+        a.actionType = Discourse.Site.instance().postActionTypeById(a.id);
+        var actionSummary = Discourse.ActionSummary.create(a);
         lookup.set(a.actionType.get('name_key'), actionSummary);
         return actionSummary;
       });
@@ -289,8 +287,7 @@ Discourse.Post.reopenClass({
   },
 
   create: function(obj, topic) {
-    var result;
-    result = this._super(obj);
+    var result = this._super(obj);
     this.createActionSummary(result);
     if (obj.reply_to_user) {
       result.set('reply_to_user', Discourse.User.create(obj.reply_to_user));

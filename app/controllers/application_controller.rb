@@ -22,6 +22,7 @@ class ApplicationController < ActionController::Base
   before_filter :preload_json
   before_filter :check_xhr
   before_filter :set_locale
+  before_filter :redirect_to_login_if_required
 
   rescue_from Exception do |exception|
     unless [ ActiveRecord::RecordNotFound, ActionController::RoutingError,
@@ -65,18 +66,21 @@ class ApplicationController < ActionController::Base
   end
 
   rescue_from Discourse::NotFound do
-    if !request.format || request.format.html?
-      # for now do a simple remap, we may look at cleaner ways of doing the render
-      #
-      # Sam: I am confused about this, we need a comment that explains why this is conditional
-      raise ActiveRecord::RecordNotFound
+
+    if request.format && request.format.json?
+      render status: 404, layout: false, text: "[error: 'not found']"
     else
-      render file: 'public/404', formats: [:html], layout: false, status: 404
+      render_not_found_page(404)
     end
+
   end
 
   rescue_from Discourse::InvalidAccess do
-    render file: 'public/403', formats: [:html], layout: false, status: 403
+    if request.format && request.format.json?
+      render status: 403, layout: false, text: "[error: 'invalid access']"
+    else
+      render_not_found_page(403)
+    end
   end
 
 
@@ -94,18 +98,23 @@ class ApplicationController < ActionController::Base
 
   # If we are rendering HTML, preload the session data
   def preload_json
-    if request.format && request.format.html?
-      if guardian.current_user
-        guardian.current_user.sync_notification_channel_position
-      end
 
-      store_preloaded("site", Site.cached_json)
+    # We don't preload JSON on xhr or JSON request
+    return if request.xhr?
 
-      if current_user.present?
-        store_preloaded("currentUser", MultiJson.dump(CurrentUserSerializer.new(current_user, root: false)))
-      end
-      store_preloaded("siteSettings", SiteSetting.client_settings_json)
+    if guardian.current_user
+      guardian.current_user.sync_notification_channel_position
     end
+
+    store_preloaded("site", Site.cached_json(current_user))
+
+    if current_user.present?
+      store_preloaded("currentUser", MultiJson.dump(CurrentUserSerializer.new(current_user, root: false)))
+
+      serializer = ActiveModel::ArraySerializer.new(TopicTrackingState.report([current_user.id]), each_serializer: TopicTrackingStateSerializer)
+      store_preloaded("topicTrackingStates", MultiJson.dump(serializer))
+    end
+    store_preloaded("siteSettings", SiteSetting.client_settings_json)
   end
 
 
@@ -118,21 +127,24 @@ class ApplicationController < ActionController::Base
     @guardian ||= Guardian.new(current_user)
   end
 
+
+  def serialize_data(obj, serializer, opts={})
+    # If it's an array, apply the serializer as an each_serializer to the elements
+    serializer_opts = {scope: guardian}.merge!(opts)
+    if obj.is_a?(Array)
+      serializer_opts[:each_serializer] = serializer
+      ActiveModel::ArraySerializer.new(obj, serializer_opts).as_json
+    else
+      serializer.new(obj, serializer_opts).as_json
+    end
+  end
+
   # This is odd, but it seems that in Rails `render json: obj` is about
   # 20% slower than calling MultiJSON.dump ourselves. I'm not sure why
   # Rails doesn't call MultiJson.dump when you pass it json: obj but
   # it seems we don't need whatever Rails is doing.
   def render_serialized(obj, serializer, opts={})
-
-    # If it's an array, apply the serializer as an each_serializer to the elements
-    serializer_opts = {scope: guardian}.merge!(opts)
-    if obj.is_a?(Array)
-      serializer_opts[:each_serializer] = serializer
-      render_json_dump(ActiveModel::ArraySerializer.new(obj, serializer_opts).as_json)
-    else
-      render_json_dump(serializer.new(obj, serializer_opts).as_json)
-    end
-
+    render_json_dump(serialize_data(obj, serializer, opts))
   end
 
   def render_json_dump(obj)
@@ -170,6 +182,19 @@ class ApplicationController < ActionController::Base
       yield
     end
   end
+
+
+  def fetch_user_from_params
+    username_lower = params[:username].downcase
+    username_lower.gsub!(/\.json$/, '')
+
+    user = User.where(username_lower: username_lower).first
+    raise Discourse::NotFound.new if user.blank?
+
+    guardian.ensure_can_see!(user)
+    user
+  end
+
 
   private
 
@@ -254,6 +279,19 @@ class ApplicationController < ActionController::Base
 
     def ensure_logged_in
       raise Discourse::NotLoggedIn.new unless current_user.present?
+    end
+
+    def redirect_to_login_if_required
+      redirect_to :login if SiteSetting.login_required? && !current_user
+    end
+
+    def render_not_found_page(status=404)
+      f = Topic.where(deleted_at: nil, archetype: "regular")
+      @latest = f.order('views desc').take(10)
+      @recent = f.order('created_at desc').take(10)
+      @slug =  params[:slug].class == String ? params[:slug] : ''
+      @slug.gsub!('-',' ')
+      render status: status, layout: 'no_js', template: '/exceptions/not_found'
     end
 
 end

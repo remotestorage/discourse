@@ -1,4 +1,9 @@
 # encoding: utf-8
+# This file contains content for the server portion of Discourse used by Ruby
+#
+# To validate this YAML file after you change it, please paste it into
+# http://yamllint.com/
+
 sv:
   time:
     formats:
@@ -358,7 +363,6 @@ sv:
     post_excerpt_maxlength: "Maxlängd på ett inläggs utdrag i tecken"
     post_onebox_maxlength: "Maxlängd på ett onebox:at Discourse-inlägg"
     category_post_template: "Inläggsmallen för kategoridefinitioner när du skapar en ny kategori"
-    new_topics_rollup: "Hur många nya trådar kan infogas i trådlistan innan den övergår till en siffra"
     onebox_max_chars: "Max antal tecken en onebox importerar från en extern sida i ett inlägg"
 
     logo_url: "Logotypen för din webbplats t.ex.: http://xyz.com/x.png"
@@ -389,7 +393,7 @@ sv:
     ga_tracking_code: "Google analytics tracking code code, eg: UA-12345678-9; see http://google.com/analytics"
     top_menu: "Determine which items appear in the homepage navigation, and in what order. Example latest|hot|read|favorited|unread|new|posted|categories"
     post_menu: "Determine which items appear on the post menu, and in what order. Example like|edit|flag|delete|share|bookmark|reply"
-    share_links: "Determine which items appear on the share dialog, and in what order. Example twitter|facebook|google+"
+    share_links: "Determine which items appear on the share dialog, and in what order. Example twitter|facebook|google+|email"
     track_external_right_clicks: "Track external links that are right clicked (eg: open in new tab) disabled by default because it rewrites URLs"
     topics_per_page: "How many topics are loaded by default on the topics list page"
     posts_per_page: "How many posts are returned on a topic page"
@@ -401,8 +405,8 @@ sv:
     email_domains_whitelist: "A pipe-delimited list of email domains that users may register with. WARNING: Users with email domains other than those listed will not be allowed."
     version_checks: "Ping the Discourse Hub for version updates and show version messages on the /admin dashboard"
 
-    port: "Use this HTTP port rather than the default of port 80. Leave blank for none, mainly useful for development"
-    force_hostname: "Specify a hostname in the URL. Leave blank for none, mainly useful for development"
+    port: "DEVELOPER ONLY! WARNING! Use this HTTP port rather than the default of port 80. Leave blank for default of 80."
+    force_hostname: "DEVELOPER ONLY! WARNING! Specify a hostname in the URL. Leave blank for default."
 
     invite_expiry_days: "How long user invitation keys are valid, in days"
 

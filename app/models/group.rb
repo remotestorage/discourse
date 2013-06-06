@@ -38,18 +38,19 @@ class Group < ActiveRecord::Base
 
     real_ids = case name
                when :admins
-                 "SELECT u.id FROM users u WHERE u.admin = 't'"
+                 "SELECT u.id FROM users u WHERE u.admin"
                when :moderators
-                 "SELECT u.id FROM users u WHERE u.moderator = 't'"
+                 "SELECT u.id FROM users u WHERE u.moderator"
                when :staff
-                 "SELECT u.id FROM users u WHERE u.moderator = 't' OR u.admin = 't'"
+                 "SELECT u.id FROM users u WHERE u.moderator OR u.admin"
                when :trust_level_1, :trust_level_2, :trust_level_3, :trust_level_4, :trust_level_5
                  "SELECT u.id FROM users u WHERE u.trust_level = #{id-10}"
                end
 
 
     extra_users = group.users.where("users.id NOT IN (#{real_ids})").select('users.id')
-    missing_users = GroupUser.joins("RIGHT JOIN (#{real_ids}) X ON X.id = user_id AND group_id = #{group.id}")
+    missing_users = GroupUser
+      .joins("RIGHT JOIN (#{real_ids}) X ON X.id = user_id AND group_id = #{group.id}")
       .where("user_id IS NULL")
       .select("X.id")
 
@@ -77,15 +78,12 @@ class Group < ActiveRecord::Base
   end
 
   def self.[](name)
-    unless g = lookup_group(name)
-      g = refresh_automatic_group!(name)
-    end
-    g
+    lookup_group(name) || refresh_automatic_group!(name)
   end
 
   def self.lookup_group(name)
     raise ArgumentError, "unknown group" unless id = AUTO_GROUPS[name]
-    g = Group.where(id: id).first
+    Group.where(id: id).first
   end
 
 
@@ -132,11 +130,7 @@ class Group < ActiveRecord::Base
   end
 
   def usernames
-    users.select("username").map(&:username).join(",")
-  end
-
-  def user_ids
-    users.select('users.id').map(&:id)
+    users.pluck(:username).join(",")
   end
 
   def add(user)
@@ -162,3 +156,20 @@ class Group < ActiveRecord::Base
   end
 
 end
+
+# == Schema Information
+#
+# Table name: groups
+#
+#  id         :integer          not null, primary key
+#  name       :string(255)      not null
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#  automatic  :boolean          default(FALSE), not null
+#  user_count :integer          default(0), not null
+#
+# Indexes
+#
+#  index_groups_on_name  (name) UNIQUE
+#
+

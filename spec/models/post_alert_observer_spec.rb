@@ -4,6 +4,7 @@ require_dependency 'post_destroyer'
 describe PostAlertObserver do
 
   before do
+    ActiveRecord::Base.observers.enable :post_alert_observer
     ImageSorcery.any_instance.stubs(:convert).returns(false)
   end
 
@@ -105,6 +106,18 @@ describe PostAlertObserver do
       }.should_not change(evil_trout.notifications, :count)
     end
 
+  end
+
+  context 'moderator action post' do
+    let(:user) { Fabricate(:user) }
+    let(:first_post) { Fabricate(:post, user: user, raw: 'A useless post for you.')}
+    let(:topic) { first_post.topic }
+
+    it 'should not notify anyone' do
+      expect {
+        Fabricate(:post, topic: topic, raw: 'This topic is CLOSED', post_type: Post.types[:moderator_action])
+      }.to_not change { Notification.count }
+    end
   end
 
 end

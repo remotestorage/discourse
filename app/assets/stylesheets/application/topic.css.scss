@@ -102,12 +102,8 @@
 // App header
 
 .extra-info-wrapper {
-  display: none;
   float: left;
   margin-left: 10px;
-  &.show-extra-info {
-    display: block;
-  }
 }
 
 #multi-select-options {
@@ -328,6 +324,10 @@
         margin-right: 5px;
       }
     }
+  }
+
+  #topic-closing-info {
+    margin-left: 103px;
   }
 }
 

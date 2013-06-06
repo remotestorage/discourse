@@ -14,7 +14,7 @@ gem 'barber', '0.3.0'
 
 gem 'vestal_versions', git: 'https://github.com/zhangyuan/vestal_versions'
 
-gem 'message_bus', path: 'vendor/gems/message_bus'
+gem 'message_bus', git: 'https://github.com/SamSaffron/message_bus'
 gem 'rails_multisite', path: 'vendor/gems/rails_multisite'
 gem 'simple_handlebars_rails', path: 'vendor/gems/simple_handlebars_rails'
 
@@ -50,6 +50,7 @@ gem 'omniauth-facebook'
 gem 'omniauth-twitter'
 gem 'omniauth-github'
 gem 'omniauth-browserid', git: 'https://github.com/callahad/omniauth-browserid.git', branch: 'observer_api'
+gem 'omniauth-cas'
 gem 'oj'
 gem 'pg', '0.15.1'
 # we had pain with the 3.2.13 upgrade so monkey patch the security fix
@@ -64,11 +65,13 @@ gem 'sanitize'
 gem 'sass'
 gem 'seed-fu'
 gem 'sidekiq'
+gem 'sidekiq-failures'
 gem 'sinatra', require: nil
 gem 'slim'  # required for sidekiq-web
+gem 'strong_parameters' # remove when we upgrade to Rails 4
 gem 'therubyracer', require: 'v8'
 gem 'thin'
-gem 'diffy'
+gem 'diffy', require: false
 
 # Gem that enables support for plugins. It is required.
 gem 'discourse_plugin', path: 'vendor/gems/discourse_plugin'
@@ -91,33 +94,39 @@ group :assets do
 end
 
 group :test do
-  gem 'fakeweb', '~> 1.3.0'
-  gem 'minitest'
+  gem 'fakeweb', '~> 1.3.0', require: false
+  gem 'minitest', require: false
 end
 
 group :test, :development do
   gem 'jshint_on_rails'
-  gem 'guard-jshint-on-rails'
-  gem 'certified'
-  gem 'fabrication'
-  gem 'guard-jasmine'
-  gem 'guard-rspec'
-  gem 'guard-spork'
+  gem 'listen', require: false
+  gem 'guard-jshint-on-rails', require: false
+  gem 'certified', require: false
+  gem 'fabrication', require: false
+  gem 'guard-jasmine', require: false
+  gem 'guard-rspec', require: false
+  gem 'guard-spork', require: false
   gem 'jasminerice'
   gem 'mocha', require: false
-  gem 'rb-fsevent'
-  gem 'rb-inotify', '~> 0.9', require: RUBY_PLATFORM.include?('linux') && 'rb-inotify'
-  gem 'rspec-rails'
-  gem 'shoulda'
+  gem 'rb-fsevent', require: RUBY_PLATFORM =~ /darwin/i ? 'rb-fsevent' : false
+  gem 'rb-inotify', '~> 0.9', require: RUBY_PLATFORM =~ /linux/i ? 'rb-inotify' : false
+  gem 'rspec-rails', require: false
+  gem 'shoulda', require: false
   gem 'simplecov', require: false
-  gem 'terminal-notifier-guard', require: RUBY_PLATFORM.include?('darwin') && 'terminal-notifier-guard'
+  gem 'terminal-notifier-guard', require: false
+  gem 'timecop'
+  gem 'rspec-given'
+  gem 'pry-rails'
+  gem 'pry-nav'
 end
 
 group :development do
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'librarian', '>= 0.0.25', require: false
-  gem 'pry-rails'
+  # https://github.com/ctran/annotate_models/pull/106
+  gem 'annotate', :git => 'https://github.com/SamSaffron/annotate_models.git'
 end
 
 # we are using a custom sprockets repo to work around: https://github.com/rails/rails/issues/8099#issuecomment-16137638

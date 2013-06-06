@@ -8,10 +8,11 @@ class UsersController < ApplicationController
 
   before_filter :ensure_logged_in, only: [:username, :update, :change_email, :user_preferences_redirect]
 
-  # we need to allow account creation with bad CSRF tokens, if people are caching, the CSRF token on the 
+  # we need to allow account creation with bad CSRF tokens, if people are caching, the CSRF token on the
   #  page is going to be empty, this means that server will see an invalid CSRF and blow the session
   #  once that happens you can't log in with social
   skip_before_filter :verify_authenticity_token, only: [:create]
+  skip_before_filter :redirect_to_login_if_required, only: [:check_username,:create,:get_honeypot_value,:activate_account,:send_activation_email,:authorize_email]
 
   def show
     @user = fetch_user_from_params
@@ -144,16 +145,7 @@ class UsersController < ApplicationController
   end
 
   def create
-
-    if honeypot_or_challenge_fails?(params)
-      # Don't give any indication that we caught you in the honeypot
-      honey_pot_response = {
-        success: true,
-        active: false,
-        message: I18n.t("login.activate_email", email: params[:email])
-      }
-      return render(json: honey_pot_response)
-    end
+    return fake_success_reponse if suspicious? params
 
     user = User.new_from_params(params)
 
@@ -348,15 +340,18 @@ class UsersController < ApplicationController
       '3019774c067cc2b'
     end
 
-    def fetch_user_from_params
-      username_lower = params[:username].downcase
-      username_lower.gsub!(/\.json$/, '')
+    def suspicious?(params)
+      honeypot_or_challenge_fails?(params) || SiteSetting.invite_only?
+    end
 
-      user = User.where(username_lower: username_lower).first
-      raise Discourse::NotFound.new if user.blank?
-
-      guardian.ensure_can_see!(user)
-      user
+    def fake_success_reponse
+      render(
+        json: {
+          success: true,
+          active: false,
+          message: I18n.t("login.activate_email", email: params[:email])
+        }
+      )
     end
 
     def honeypot_or_challenge_fails?(params)

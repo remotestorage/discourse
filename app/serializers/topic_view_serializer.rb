@@ -18,7 +18,8 @@ class TopicViewSerializer < ApplicationSerializer
      :moderator_posts_count,
      :has_best_of,
      :archetype,
-     :slug]
+     :slug,
+     :auto_close_at]
   end
 
   def self.guardian_attributes
@@ -127,6 +128,7 @@ class TopicViewSerializer < ApplicationSerializer
   def categoryName
     object.topic.category.name
   end
+
   def include_categoryName?
     object.topic.category.present?
   end

@@ -11,8 +11,7 @@ Discourse.TopicView = Discourse.View.extend(Discourse.Scrolling, {
   templateName: 'topic',
   topicBinding: 'controller.content',
   userFiltersBinding: 'controller.userFilters',
-  classNameBindings: ['controller.multiSelect:multi-select', 'topic.archetype'],
-  siteBinding: 'Discourse.site',
+  classNameBindings: ['controller.multiSelect:multi-select', 'topic.archetype', 'topic.category.secure:secure_category'],
   progressPosition: 1,
   menuVisible: true,
   SHORT_POST: 1200,
@@ -137,11 +136,45 @@ Discourse.TopicView = Discourse.View.extend(Discourse.Scrolling, {
     });
 
     this.updatePosition(true);
+
+    // Watch all incoming topic changes
+    this.get('topicTrackingState').trackIncoming("all");
   },
+
+  debounceLoadSuggested: Discourse.debounce(function(lookup){
+    var suggested = this.get('topic.suggested_topics');
+
+    Discourse.TopicList.loadTopics(lookup, "").then(function(topics){
+      suggested.clear();
+      suggested.pushObjects(topics);
+    });
+  }, 1000),
+
+  hasNewSuggested: function(){
+    var incoming = this.get('topicTrackingState.newIncoming');
+    var suggested = this.get('topic.suggested_topics');
+
+    if(suggested) {
+      var lookup = incoming.slice(-5).reverse().unique();
+      if(lookup.length < 5) {
+        suggested.each(function(topic){
+          if (topic) {
+            lookup.push(topic.get('id'));
+            lookup = lookup.unique();
+            return lookup.length < 5;
+          }
+        });
+      }
+
+      var topicId = this.get('topic.id');
+      lookup = lookup.exclude(function(id){ return id === topicId; });
+
+      this.debounceLoadSuggested(lookup);
+    }
+  }.observes('topicTrackingState.incomingCount'),
 
   // Triggered whenever any posts are rendered, debounced to save over calling
   postsRendered: Discourse.debounce(function() {
-    this.set('renderedPosts', $('.topic-post'));
     this.updatePosition(false);
   }, 50),
 
@@ -307,6 +340,11 @@ Discourse.TopicView = Discourse.View.extend(Discourse.Scrolling, {
   },
 
   finishedEdit: function() {
+
+    // TODO: This should be in a controller and use proper text fields
+
+    var topicView = this;
+
     if (this.get('editingTopic')) {
       var topic = this.get('topic');
       // retrieve the title from the text field
@@ -327,9 +365,17 @@ Discourse.TopicView = Discourse.View.extend(Discourse.Scrolling, {
           title: title,
           fancy_title: title
         });
+
+      }, function(error) {
+        topicView.set('editingTopic', true);
+        if (error && error.responseText) {
+          bootbox.alert($.parseJSON(error.responseText).errors[0]);
+        } else {
+          bootbox.alert(Em.String.i18n('generic_error'));
+        }
       });
       // close editing mode
-      this.set('editingTopic', false);
+      topicView.set('editingTopic', false);
     }
   },
 
@@ -340,9 +386,9 @@ Discourse.TopicView = Discourse.View.extend(Discourse.Scrolling, {
     return false;
   },
 
-  showFavoriteButton: (function() {
-    return Discourse.currentUser && !this.get('topic.isPrivateMessage');
-  }).property('topic.isPrivateMessage'),
+  showFavoriteButton: function() {
+    return Discourse.User.current() && !this.get('topic.isPrivateMessage');
+  }.property('topic.isPrivateMessage'),
 
   resetExamineDockCache: function() {
     this.docAt = null;
@@ -374,7 +420,7 @@ Discourse.TopicView = Discourse.View.extend(Discourse.Scrolling, {
         title, info, rows, screenTrack, _this, currentPost;
 
     _this = this;
-    rows = this.get('renderedPosts');
+    rows = $('.topic-post');
 
     if (!rows || rows.length === 0) { return; }
     info = Discourse.Eyeline.analyze(rows);
@@ -402,10 +448,20 @@ Discourse.TopicView = Discourse.View.extend(Discourse.Scrolling, {
       currentPost = currentPost || seen;
     });
 
-    this.nonUrgentPositionUpdate({
+    var currentForPositionUpdate = currentPost;
+    if (!currentForPositionUpdate) {
+      var postView = this.getPost($(rows[info.bottom]));
+      if (postView) { currentForPositionUpdate = postView.get('post_number'); }
+    }
+
+    if (currentForPositionUpdate) {
+      this.nonUrgentPositionUpdate({
         userActive: userActive,
-        currentPost: currentPost || this.getPost($(rows[info.bottom])).get('post_number')
-    });
+        currentPost: currentPost || currentForPositionUpdate
+      });
+    } else {
+      console.error("can't update position ");
+    }
 
     offset = window.pageYOffset || $('html').scrollTop();
     firstLoaded = this.get('firstPostLoaded');
@@ -441,20 +497,46 @@ Discourse.TopicView = Discourse.View.extend(Discourse.Scrolling, {
     }
   },
 
+  topicTrackingState: function(){
+    return Discourse.TopicTrackingState.current();
+  }.property(),
+
   browseMoreMessage: (function() {
     var category, opts;
 
     opts = {
       latestLink: "<a href=\"/\">" + (Em.String.i18n("topic.view_latest_topics")) + "</a>"
     };
+
     if (category = this.get('controller.content.category')) {
       opts.catLink = Discourse.Utilities.categoryLink(category);
-      return Ember.String.i18n("topic.read_more_in_category", opts);
     } else {
       opts.catLink = "<a href=\"" + Discourse.getURL("/categories") + "\">" + (Em.String.i18n("topic.browse_all_categories")) + "</a>";
+    }
+
+    var tracking = this.get('topicTrackingState');
+
+    var unreadTopics = tracking.countUnread();
+    var newTopics = tracking.countNew();
+
+    if (newTopics + unreadTopics > 0) {
+      var hasBoth = unreadTopics > 0 && newTopics > 0;
+
+      return I18n.messageFormat("topic.read_more_MF", {
+        "BOTH": hasBoth,
+        "UNREAD": unreadTopics,
+        "NEW": newTopics,
+        "CATEGORY": category ? true : false,
+        latestLink: opts.latestLink,
+        catLink: opts.catLink
+      });
+    }
+    else if (category) {
+      return Ember.String.i18n("topic.read_more_in_category", opts);
+    } else {
       return Ember.String.i18n("topic.read_more", opts);
     }
-  }).property()
+  }).property('topicTrackingState.messageCount')
 
 });
 
@@ -475,7 +557,7 @@ Discourse.TopicView.reopenClass({
         expectedOffset = title.height() - header.find('.contents').height();
 
         if (expectedOffset < 0) {
-            expectedOffset = 0;
+          expectedOffset = 0;
         }
 
         $('html, body').scrollTop(existing.offset().top - (header.outerHeight(true) + expectedOffset));

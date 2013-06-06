@@ -21,39 +21,45 @@ describe Upload do
       })
     end
 
-    it "uses imgur when it is enabled" do
-      SiteSetting.stubs(:enable_imgur?).returns(true)
-      Upload.expects(:create_on_imgur).with(user_id, logo, topic_id)
-      Upload.create_for(user_id, logo, topic_id)
+    let(:upload) { Upload.create_for(user_id, logo, topic_id) }
+
+    let(:url) { "http://domain.com" }
+
+    shared_examples_for "upload" do
+      it "is valid" do
+        upload.user_id.should == user_id
+        upload.topic_id.should == topic_id
+        upload.original_filename.should == logo.original_filename
+        upload.filesize.should == File.size(logo.tempfile)
+        upload.width.should == 244
+        upload.height.should == 66
+        upload.url.should == url
+      end
     end
 
-    it "uses s3 when it is enabled" do
-      SiteSetting.stubs(:enable_s3_uploads?).returns(true)
-      Upload.expects(:create_on_s3).with(user_id, logo, topic_id)
-      Upload.create_for(user_id, logo, topic_id)
-    end
+    context "imgur" do
+      before(:each) do
+        SiteSetting.stubs(:enable_imgur?).returns(true)
+        Imgur.stubs(:store_file).returns(url)
+      end
 
-    it "uses local storage otherwise" do
-      Upload.expects(:create_locally).with(user_id, logo, topic_id)
-      Upload.create_for(user_id, logo, topic_id)
-    end
-
-    context 'imgur' do
-
-      # TODO
-
-    end
-
-    context 's3' do
-
-      # TODO
+      it_behaves_like "upload"
 
     end
 
-    context 'local' do
+    context "s3" do
+      before(:each) do 
+        SiteSetting.stubs(:enable_s3_uploads?).returns(true)
+        S3.stubs(:store_file).returns(url)
+      end
 
-      # TODO
+      it_behaves_like "upload"
 
+    end
+
+    context "locally" do
+      before(:each) { LocalStore.stubs(:store_file).returns(url) }
+      it_behaves_like "upload"
     end
 
   end

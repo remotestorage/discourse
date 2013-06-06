@@ -1,6 +1,6 @@
 class StaticController < ApplicationController
 
-  skip_before_filter :check_xhr
+  skip_before_filter :check_xhr, :redirect_to_login_if_required
 
   def show
 
@@ -21,7 +21,7 @@ class StaticController < ApplicationController
       return
     end
 
-    render file: 'public/404', layout: false, status: 404
+    raise Discourse::NotFound
   end
 
   # This method just redirects to a given url.
@@ -30,8 +30,13 @@ class StaticController < ApplicationController
   def enter
     params.delete(:username)
     params.delete(:password)
-    redirect_to(params[:redirect] || '/')
+
+    redirect_to(
+      if params[:redirect].blank? || params[:redirect].match(login_path)
+        root_path
+      else
+        params[:redirect]
+      end
+    )
   end
-
-
 end

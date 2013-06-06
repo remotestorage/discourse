@@ -8,21 +8,17 @@
 **/
 Discourse.Site = Discourse.Model.extend({
 
-  notificationLookup: (function() {
-    var result;
-    result = [];
+  notificationLookup: function() {
+    var result = [];
     Object.keys(this.get('notification_types'), function(k, v) {
       result[v] = k;
     });
     return result;
-  }).property('notification_types'),
+  }.property('notification_types'),
 
   flagTypes: function() {
-    var postActionTypes;
-    postActionTypes = this.get('post_action_types');
-    if (!postActionTypes) {
-      return [];
-    }
+    var postActionTypes = this.get('post_action_types');
+    if (!postActionTypes) return [];
     return postActionTypes.filterProperty('is_flag', true);
   }.property('post_action_types.@each'),
 
@@ -37,9 +33,15 @@ Discourse.Site = Discourse.Model.extend({
 });
 
 Discourse.Site.reopenClass({
+
+  instance: function() {
+    return Discourse.Site.create(PreloadStore.get('site'));
+  },
+
   create: function(obj) {
     var _this = this;
     return Object.tap(this._super(obj), function(result) {
+
       if (result.categories) {
         result.categories = result.categories.map(function(c) {
           return Discourse.Category.create(c);

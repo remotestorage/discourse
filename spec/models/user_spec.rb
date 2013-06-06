@@ -208,12 +208,10 @@ describe User do
 
     it 'allows moderator to delete all posts' do
       @user.delete_all_posts!(@guardian)
+      expect(Post.where(id: @posts.map(&:id)).all).to be_empty
       @posts.each do |p|
-        p.reload
-        if p
-          p.topic.should be_nil
-        else
-          p.should be_nil
+        if p.post_number == 1
+          expect(Topic.where(id: p.topic_id).first).to be_nil
         end
       end
     end
@@ -266,7 +264,7 @@ describe User do
 
   describe "trust levels" do
 
-    # NOTE be sure to use build to avoid db calls 
+    # NOTE be sure to use build to avoid db calls
     let(:user) { Fabricate.build(:user, trust_level: TrustLevel.levels[:newuser]) }
 
     it "sets to the default trust level setting" do
@@ -319,6 +317,46 @@ describe User do
     end
 
 
+  end
+
+  describe 'staff and regular users' do
+    let(:user) { Fabricate.build(:user) }
+
+    describe '#staff?' do
+      subject { user.staff? }
+
+      it { should be_false }
+
+      context 'for a moderator user' do
+        before { user.moderator = true }
+
+        it { should be_true }
+      end
+
+      context 'for an admin user' do
+        before { user.admin = true }
+
+        it { should be_true }
+      end
+    end
+
+    describe '#regular?' do
+      subject { user.regular? }
+
+      it { should be_true }
+
+      context 'for a moderator user' do
+        before { user.moderator = true }
+
+        it { should be_false }
+      end
+
+      context 'for an admin user' do
+        before { user.admin = true }
+
+        it { should be_false }
+      end
+    end
   end
 
   describe 'temporary_key' do
@@ -770,6 +808,59 @@ describe User do
     end
   end
 
+  describe "flag_linked_posts_as_spam" do
+    let(:user) { Fabricate(:user) }
+    let!(:admin) { Fabricate(:admin) }
+    let!(:post) { PostCreator.new(user, title: "this topic contains spam", raw: "this post has a link: http://discourse.org").create }
+    let!(:another_post) { PostCreator.new(user, title: "this topic also contains spam", raw: "this post has a link: http://discourse.org/asdfa").create }
+    let!(:post_without_link) { PostCreator.new(user, title: "this topic shouldn't be spam", raw: "this post has no links in it.").create }
+
+    it "has flagged all the user's posts as spam" do
+      user.flag_linked_posts_as_spam
+
+      post.reload
+      post.spam_count.should == 1
+
+      another_post.reload
+      another_post.spam_count.should == 1
+
+      post_without_link.reload
+      post_without_link.spam_count.should == 0
+
+      # It doesn't raise an exception if called again
+      user.flag_linked_posts_as_spam
+
+    end
+
+  end
+
+  describe "bio link stripping" do
+
+    it "returns an empty string with no bio" do
+      expect(Fabricate.build(:user).bio_excerpt).to be_blank
+    end
+
+    context "with a user that has a link in their bio" do
+      let(:user) { Fabricate.build(:user, bio_raw: "im sissy and i love http://ponycorns.com") }
+
+      before do
+        # Let's cook that bio up good
+        user.send(:cook)
+      end
+
+      it "includes the link if the user is not new" do
+        expect(user.bio_excerpt).to eq("im sissy and i love <a href='http://ponycorns.com' rel='nofollow'>http://ponycorns.com</a>")
+        expect(user.bio_processed).to eq("<p>im sissy and i love <a href=\"http://ponycorns.com\" rel=\"nofollow\">http://ponycorns.com</a></p>")
+      end
+
+      it "removes the link if the user is new" do
+        user.trust_level = TrustLevel.levels[:newuser]
+        expect(user.bio_excerpt).to eq("im sissy and i love http://ponycorns.com")
+        expect(user.bio_processed).to eq("<p>im sissy and i love http://ponycorns.com</p>")
+      end
+    end
+
+  end
 
   describe 'update_time_read!' do
     let(:user) { Fabricate(:user) }

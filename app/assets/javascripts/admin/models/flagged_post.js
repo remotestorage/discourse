@@ -8,7 +8,7 @@
 **/
 Discourse.FlaggedPost = Discourse.Post.extend({
 
-  flaggers: (function() {
+  flaggers: function() {
     var r,
       _this = this;
     r = [];
@@ -16,9 +16,9 @@ Discourse.FlaggedPost = Discourse.Post.extend({
       return r.push(_this.userLookup[a.user_id]);
     });
     return r;
-  }).property(),
+  }.property(),
 
-  messages: (function() {
+  messages: function() {
     var r,
       _this = this;
     r = [];
@@ -32,7 +32,7 @@ Discourse.FlaggedPost = Discourse.Post.extend({
       }
     });
     return r;
-  }).property(),
+  }.property(),
 
   lastFlagged: function() {
     return this.post_actions[0].created_at;
@@ -66,6 +66,7 @@ Discourse.FlaggedPost = Discourse.Post.extend({
 Discourse.FlaggedPost.reopenClass({
   findAll: function(filter) {
     var result = Em.A();
+    result.set('loading', true);
     Discourse.ajax("/admin/flags/" + filter + ".json").then(function(data) {
       var userLookup = {};
       data.users.each(function(u) {
@@ -76,6 +77,7 @@ Discourse.FlaggedPost.reopenClass({
         f.userLookup = userLookup;
         result.pushObject(f);
       });
+      result.set('loading', false);
     });
     return result;
   }

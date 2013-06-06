@@ -58,6 +58,21 @@ Discourse.Group = Discourse.Model.extend({
       group.set('disableSave', false);
       group.set('id', r.id);
     });
+  },
+
+
+  save: function(){
+    var group = this;
+    group.set('disableSave', true);
+
+    return Discourse.ajax("/admin/groups/" + this.get('id'), {type: "PUT", data: {
+      group: {
+        name: this.get('name'),
+        usernames: this.get('usernames')
+      }
+    }}).then(function(r){
+      group.set('disableSave', false);
+    });
   }
 
 });
@@ -66,7 +81,7 @@ Discourse.Group.reopenClass({
   findAll: function(){
     var list = Discourse.SelectableArray.create();
 
-    Discourse.ajax("/admin/groups").then(function(groups){
+    Discourse.ajax("/admin/groups.json").then(function(groups){
       groups.each(function(group){
         list.addObject(Discourse.Group.create(group));
       });

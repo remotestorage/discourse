@@ -21,8 +21,8 @@ class UserAction < ActiveRecord::Base
   GOT_PRIVATE_MESSAGE = 13
 
   ORDER = Hash[*[
-    NEW_PRIVATE_MESSAGE,
     GOT_PRIVATE_MESSAGE,
+    NEW_PRIVATE_MESSAGE,
     BOOKMARK,
     NEW_TOPIC,
     REPLY,
@@ -78,7 +78,7 @@ SQL
     # The weird thing is that target_post_id can be null, so it makes everything
     #  ever so more complex. Should we allow this, not sure.
 
-    builder = SqlBuilder.new("
+    builder = UserAction.sql_builder("
 SELECT
   t.title, a.action_type, a.created_at, t.id topic_id,
   a.user_id AS target_user_id, au.name AS target_name, au.username AS target_username,
@@ -105,30 +105,50 @@ LEFT JOIN categories c on c.id = t.category_id
 
     if action_id
       builder.where("a.id = :id", id: action_id.to_i)
-      data = builder.exec.to_a
     else
       builder.where("a.user_id = :user_id", user_id: user_id.to_i)
       builder.where("a.action_type in (:action_types)", action_types: action_types) if action_types && action_types.length > 0
-      builder.order_by("a.created_at desc")
-      builder.offset(offset.to_i)
-      builder.limit(limit.to_i)
-      data = builder.exec.to_a
+      builder
+        .order_by("a.created_at desc")
+        .offset(offset.to_i)
+        .limit(limit.to_i)
     end
 
-    data.each do |row|
-      row["action_type"] = row["action_type"].to_i
-      row["created_at"] = DateTime.parse(row["created_at"])
-      # we should probably cache the excerpts in the db at some point
-      row["excerpt"] = PrettyText.excerpt(row["cooked"],300) if row["cooked"]
-      row["cooked"] = nil
-      row["avatar_template"] = User.avatar_template(row["email"])
-      row["acting_avatar_template"] = User.avatar_template(row["acting_email"])
-      row.delete("email")
-      row.delete("acting_email")
-      row["slug"] = Slug.for(row["title"])
-    end
+    builder.exec.to_a
+  end
 
-    data
+  # slightly different to standard stream, it collapses replies
+  def self.private_message_stream(action_type, opts)
+
+    user_id = opts[:user_id]
+    return [] unless opts[:guardian].can_see_private_messages?(user_id)
+
+    builder = UserAction.sql_builder("
+SELECT
+  t.title, :action_type action_type, p.created_at, t.id topic_id,
+  :user_id AS target_user_id, au.name AS target_name, au.username AS target_username,
+  coalesce(p.post_number, 1) post_number,
+  p.reply_to_post_number,
+  pu.email ,pu.username, pu.name, pu.id user_id,
+  pu.email acting_email, pu.username acting_username, pu.name acting_name, pu.id acting_user_id,
+  p.cooked
+
+FROM topics t
+JOIN posts p ON p.topic_id =  t.id and p.post_number = t.highest_post_number
+JOIN users pu ON pu.id = p.user_id
+JOIN users au ON au.id = :user_id
+WHERE archetype = 'private_message' and EXISTS (
+   select 1 from user_actions a where a.user_id = :user_id and a.target_topic_id = t.id and action_type = :action_type)
+ORDER BY p.created_at desc
+
+/*offset*/
+/*limit*/
+")
+
+    builder
+      .offset((opts[:offset] || 0).to_i)
+      .limit((opts[:limit] || 60).to_i)
+      .exec(user_id: user_id, action_type: action_type).to_a
   end
 
   def self.log_action!(hash)
@@ -142,13 +162,21 @@ LEFT JOIN categories c on c.id = t.category_id
         end
         action.save!
 
-        action_type = hash[:action_type]
         user_id = hash[:user_id]
-        if action_type == LIKE
-          User.update_all('likes_given = likes_given + 1', id: user_id)
-        elsif action_type == WAS_LIKED
-          User.update_all('likes_received = likes_received + 1', id: user_id)
+        update_like_count(user_id, hash[:action_type], 1)
+
+        topic = Topic.includes(:category).where(id: hash[:target_topic_id]).first
+
+        # move into Topic perhaps
+        group_ids = nil
+        if topic && topic.category && topic.category.secure
+          group_ids = topic.category.groups.pluck("groups.id")
         end
+
+        MessageBus.publish("/users/#{action.user.username.downcase}",
+                              action.id,
+                              user_ids: [user_id],
+                              group_ids: group_ids )
 
       rescue ActiveRecord::RecordNotUnique
         # can happen, don't care already logged
@@ -164,19 +192,20 @@ LEFT JOIN categories c on c.id = t.category_id
       MessageBus.publish("/user/#{hash[:user_id]}", {user_action_id: action.id, remove: true})
     end
 
-    action_type = hash[:action_type]
-    user_id = hash[:user_id]
-    if action_type == LIKE
-      User.update_all('likes_given = likes_given - 1', id: user_id)
-    elsif action_type == WAS_LIKED
-      User.update_all('likes_received = likes_received - 1', id: user_id)
-    end
+    update_like_count(hash[:user_id], hash[:action_type], -1)
   end
 
   protected
 
-  def self.apply_common_filters(builder,user_id,guardian,ignore_private_messages=false)
+  def self.update_like_count(user_id, action_type, delta)
+    if action_type == LIKE
+      User.update_all("likes_given = likes_given + #{delta.to_i}", id: user_id)
+    elsif action_type == WAS_LIKED
+      User.update_all("likes_received = likes_received + #{delta.to_i}", id: user_id)
+    end
+  end
 
+  def self.apply_common_filters(builder,user_id,guardian,ignore_private_messages=false)
 
     unless guardian.can_see_deleted_posts?
       builder.where("p.deleted_at is null and p2.deleted_at is null and t.deleted_at is null")
@@ -208,3 +237,25 @@ LEFT JOIN categories c on c.id = t.category_id
     end
   end
 end
+
+# == Schema Information
+#
+# Table name: user_actions
+#
+#  id              :integer          not null, primary key
+#  action_type     :integer          not null
+#  user_id         :integer          not null
+#  target_topic_id :integer
+#  target_post_id  :integer
+#  target_user_id  :integer
+#  acting_user_id  :integer
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#
+# Indexes
+#
+#  idx_unique_rows                           (action_type,user_id,target_topic_id,target_post_id,acting_user_id) UNIQUE
+#  index_actions_on_acting_user_id           (acting_user_id)
+#  index_actions_on_user_id_and_action_type  (user_id,action_type)
+#
+

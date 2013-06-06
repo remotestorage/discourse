@@ -1,3 +1,5 @@
+require 'cache'
+
 module Discourse
 
   # When they try to do something they should be logged in for
@@ -12,29 +14,44 @@ module Discourse
   # When something they want is not found
   class NotFound < Exception; end
 
+  # When a setting is missing
+  class SiteSettingMissing < Exception; end
+
+  def self.cache
+    @cache ||= Cache.new
+  end
 
   # Get the current base URL for the current site
   def self.current_hostname
-    RailsMultisite::ConnectionManagement.current_hostname
+    if SiteSetting.force_hostname.present?
+      SiteSetting.force_hostname
+    else
+      RailsMultisite::ConnectionManagement.current_hostname
+    end
   end
 
   def self.base_uri default_value=""
     if !ActionController::Base.config.relative_url_root.blank?
-      return ActionController::Base.config.relative_url_root 
+      return ActionController::Base.config.relative_url_root
     else
       return default_value
     end
   end
 
   def self.base_url_no_prefix
+    default_port = 80
     protocol = "http"
-    protocol = "https" if SiteSetting.use_ssl?
-    if SiteSetting.force_hostname.present?
-      result = "#{protocol}://#{SiteSetting.force_hostname}"
-    else
-      result = "#{protocol}://#{current_hostname}"
+
+    if SiteSetting.use_ssl?
+      protocol = "https"
+      default_port = 443
     end
-    result << ":#{SiteSetting.port}" if SiteSetting.port.present? && SiteSetting.port.to_i > 0
+
+    result = "#{protocol}://#{current_hostname}"
+
+    port = SiteSetting.port.present? && SiteSetting.port.to_i > 0 ? SiteSetting.port.to_i : default_port
+
+    result << ":#{SiteSetting.port}" if port != default_port
     result
   end
 
@@ -68,6 +85,12 @@ module Discourse
     end
   end
 
+  # Either returns the system_username user or the first admin.
+  def self.system_user
+    user = User.where(username_lower: SiteSetting.system_username).first if SiteSetting.system_username.present?
+    user = User.admins.order(:id).first if user.blank?
+    user
+  end
 
 private
 

@@ -7,11 +7,7 @@ class TextSentinel
 
   def initialize(text, opts=nil)
     @opts = opts || {}
-    @text = text.encode('UTF-8', invalid: :replace, undef: :replace, replace: '') if text.present?
-  end
-
-  def self.non_symbols_regexp
-    /[\ -\/\[-\`\:-\@\{-\~]/m
+    @text = text.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '')
   end
 
   def self.body_sentinel(text)
@@ -26,29 +22,44 @@ class TextSentinel
 
   # Entropy is a number of how many unique characters the string needs.
   def entropy
-    return 0 if @text.blank?
-    @entropy ||= @text.strip.each_char.to_a.uniq.size
+    @entropy ||= @text.to_s.strip.split('').uniq.size
   end
 
   def valid?
-    # Blank strings are not valid
-    return false if @text.blank? || @text.strip.blank?
-
-    # Entropy check if required
-    return false if @opts[:min_entropy].present? && (entropy < @opts[:min_entropy])
-
-    # We don't have a comprehensive list of symbols, but this will eliminate some noise
-    non_symbols = @text.gsub(TextSentinel.non_symbols_regexp, '').size
-    return false if non_symbols == 0
-
-    # Don't allow super long strings without spaces
-    return false if @opts[:max_word_length] && @text =~ /\w{#{@opts[:max_word_length]},}(\s|$)/
-
-    # We don't allow all upper case content in english
-    return false if (@text =~ /[A-Z]+/) && (@text == @text.upcase)
-
-    # It is valid
+    @text.present? &&
+    seems_meaningful? &&
+    seems_pronounceable? &&
+    seems_unpretentious? &&
+    seems_quiet? &&
     true
+  end
+
+  private
+
+  def symbols_regex
+    /[\ -\/\[-\`\:-\@\{-\~]/m
+  end
+
+  def seems_meaningful?
+    # Minimum entropy if entropy check required
+    @opts[:min_entropy].blank? || (entropy >= @opts[:min_entropy])
+  end
+
+  def seems_pronounceable?
+    # At least some non-symbol characters
+    # (We don't have a comprehensive list of symbols, but this will eliminate some noise)
+    @text.gsub(symbols_regex, '').size > 0
+  end
+
+  def seems_unpretentious?
+    # Don't allow super long words if there is a word length maximum
+    @opts[:max_word_length].blank? || @text.split(/\s/).map(&:size).max <= @opts[:max_word_length]
+  end
+
+
+  def seems_quiet?
+    # We don't allow all upper case content in english
+    not((@text =~ /[A-Z]+/) && (@text == @text.upcase))
   end
 
 end

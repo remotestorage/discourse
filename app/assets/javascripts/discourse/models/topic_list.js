@@ -9,64 +9,88 @@
 
 Discourse.TopicList = Discourse.Model.extend({
 
+  forEachNew: function(topics, callback) {
+    var topicIds = [];
+    this.get('topics').each(function(t) {
+      topicIds[t.get('id')] = true;
+    });
+
+    topics.each(function(t) {
+      if(!topicIds[t.id]) {
+        callback(t);
+      }
+    });
+  },
+
   loadMoreTopics: function() {
     var moreUrl, _this = this;
 
     if (moreUrl = this.get('more_topics_url')) {
       Discourse.URL.replaceState(Discourse.getURL("/") + (this.get('filter')) + "/more");
       return Discourse.ajax({url: moreUrl}).then(function (result) {
-        var newTopics, topicIds, topics, topicsAdded = 0;
+        var newTopics, topics, topicsAdded = 0;
         if (result) {
           // the new topics loaded from the server
           newTopics = Discourse.TopicList.topicsFrom(result);
-          // the current topics
-          topics = _this.get('topics');
-          // keeps track of the ids of the current topics
-          topicIds = [];
-          topics.each(function(t) {
-            topicIds[t.get('id')] = true;
+          topics = _this.get("topics");
+
+          _this.forEachNew(newTopics, function(t) {
+            t.set('highlight', topicsAdded++ === 0);
+            topics.pushObject(t);
           });
-          // add new topics to the list of current topics if not already present
-          newTopics.each(function(t) {
-            if (!topicIds[t.get('id')]) {
-              // highlight the first of the new topics so we can get a visual feedback
-              t.set('highlight', topicsAdded++ === 0);
-              return topics.pushObject(t);
-            }
-          });
+
           _this.set('more_topics_url', result.topic_list.more_topics_url);
           Discourse.set('transient.topicsList', _this);
         }
         return result.topic_list.more_topics_url;
       });
     } else {
-      return null;
+      // Return a promise indicating no more results
+      return Ember.Deferred.promise(function (p) {
+        p.resolve(false);
+      });
     }
   },
 
-  insert: function(json) {
-    var newTopic  = Discourse.TopicList.decodeTopic(json);
-    newTopic.setProperties({
-      unseen: true,
-      highlight: true
-    });
-    this.get('inserted').unshiftObject(newTopic);
-  }
 
+  // loads topics with these ids "before" the current topics
+  loadBefore: function(topic_ids){
+    var _this = this;
+    var topics = this.get('topics');
+
+    Discourse.TopicList.loadTopics(topic_ids, this.get('filter'))
+      .then(function(newTopics){
+        _this.forEachNew(newTopics, function(t) {
+          // highlight the first of the new topics so we can get a visual feedback
+          t.set('highlight', true);
+          topics.insertAt(0,t);
+        });
+        Discourse.set('transient.topicsList', _this);
+
+      });
+  }
 });
 
 Discourse.TopicList.reopenClass({
 
-  decodeTopic: function(result) {
-    var categories, topic, users;
-    categories = this.extractByKey(result.categories, Discourse.Category);
-    users = this.extractByKey(result.users, Discourse.User);
-    topic = result.topic_list_item;
-    topic.category = categories[topic.category];
-    topic.posters.each(function(p) {
-      p.user = users[p.user_id] || users[p.user];
-    });
-    return Discourse.Topic.create(topic);
+  loadTopics: function(topic_ids, filter) {
+    var defer = new Ember.Deferred();
+
+    var url = Discourse.getURL("/") + filter + "?topic_ids=" + topic_ids.join(",");
+    Discourse.ajax({url: url}).then(function (result) {
+      if (result) {
+        // the new topics loaded from the server
+        var newTopics = Discourse.TopicList.topicsFrom(result);
+
+        defer.resolve(topic_ids.map(function(id){
+          return newTopics.find(function(t){ return t.id === id; });
+        }));
+      } else {
+        defer.reject();
+      }
+    }).then(null, function(){ defer.reject(); });
+
+    return defer;
   },
 
   topicsFrom: function(result) {
@@ -115,7 +139,6 @@ Discourse.TopicList.reopenClass({
         topics: Discourse.TopicList.topicsFrom(result),
         can_create_topic: result.topic_list.can_create_topic,
         more_topics_url: result.topic_list.more_topics_url,
-        filter_summary: result.topic_list.filter_summary,
         draft_key: result.topic_list.draft_key,
         draft_sequence: result.topic_list.draft_sequence,
         draft: result.topic_list.draft,

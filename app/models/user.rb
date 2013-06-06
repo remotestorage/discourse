@@ -3,6 +3,8 @@ require_dependency 'email_token'
 require_dependency 'trust_level'
 require_dependency 'pbkdf2'
 require_dependency 'summarize'
+require_dependency 'discourse'
+require_dependency 'post_destroyer'
 
 class User < ActiveRecord::Base
   attr_accessible :name, :username, :password, :email, :bio_raw, :website
@@ -22,13 +24,18 @@ class User < ActiveRecord::Base
   has_many :views
   has_many :user_visits
   has_many :invites
+  has_many :topic_links
+
   has_one :twitter_user_info, dependent: :destroy
   has_one :github_user_info, dependent: :destroy
+  has_one :cas_user_info, dependent: :destroy
   belongs_to :approved_by, class_name: 'User'
 
   has_many :group_users
   has_many :groups, through: :group_users
   has_many :secure_categories, through: :groups, source: :categories
+
+  has_one :user_search_data
 
   validates_presence_of :username
   validates_presence_of :email
@@ -54,7 +61,8 @@ class User < ActiveRecord::Base
 
   scope :admins, ->{ where(admin: true) }
   scope :moderators, ->{ where(moderator: true) }
-  scope :staff, ->{ where("moderator = 't' or admin = 't'") }
+  scope :staff, ->{ where("moderator or admin ") }
+  scope :blocked, ->{ where(blocked: true) } # no index
 
   module NewTopicDuration
     ALWAYS = -1
@@ -66,16 +74,14 @@ class User < ActiveRecord::Base
   end
 
   def self.sanitize_username!(name)
-    name.gsub!(/^[^A-Za-z0-9]+|[^A-Za-z0-9_]+$/, "")
-    name.gsub!(/[^A-Za-z0-9_]+/, "_")
+    name.gsub!(/^[^[:alnum:]]+|\W+$/, "")
+    name.gsub!(/\W+/, "_")
   end
 
-  def self.pad_missing_chars_with_1s!(name)
-    missing_chars = User.username_length.begin - name.length
-    name << ('1' * missing_chars) if missing_chars > 0
-  end
 
   def self.find_available_username_based_on(name)
+    sanitize_username!(name)
+    name = rightsize_username(name)
     i = 1
     attempt = name
     until username_available?(attempt)
@@ -100,12 +106,11 @@ class User < ActiveRecord::Base
       name = Regexp.last_match[2] if ['i', 'me'].include?(name)
     end
 
-    sanitize_username!(name)
-    pad_missing_chars_with_1s!(name)
-
-    # Trim extra length
-    name = name[0..User.username_length.end-1]
     find_available_username_based_on(name)
+  end
+
+  def self.rightsize_username(name)
+    name.ljust(username_length.begin, '1')[0,username_length.end]
   end
 
   def self.new_from_params(params)
@@ -267,12 +272,13 @@ class User < ActiveRecord::Base
 
   def reload
     @unread_notifications_by_type = nil
+    @unread_pms = nil
     super
   end
 
 
   def unread_private_messages
-    unread_notifications_by_type[Notification.types[:private_message]] || 0
+    @unread_pms ||= notifications.where("read = false AND notification_type = ?", Notification.types[:private_message]).count
   end
 
   def unread_notifications
@@ -280,7 +286,8 @@ class User < ActiveRecord::Base
   end
 
   def saw_notification_id(notification_id)
-    User.update_all ["seen_notification_id = ?", notification_id], ["seen_notification_id < ?", notification_id]
+    User.update_all ["seen_notification_id = ?", notification_id],
+      ["seen_notification_id < ?", notification_id]
   end
 
   def publish_notifications_state
@@ -302,7 +309,7 @@ class User < ActiveRecord::Base
   end
 
   def regular?
-    !(admin? || moderator?)
+    !staff?
   end
 
   def password=(password)
@@ -320,10 +327,6 @@ class User < ActiveRecord::Base
     self.password_hash == hash_password(password, salt)
   end
 
-  def seen?(date)
-    last_seen_at.to_date >= date if last_seen_at.present?
-  end
-
   def seen_before?
     last_seen_at.present?
   end
@@ -333,14 +336,9 @@ class User < ActiveRecord::Base
   end
 
   def update_visit_record!(date)
-    unless seen_before?
+    unless has_visit_record?(date)
+      update_column(:days_visited, days_visited + 1)
       user_visits.create!(visited_at: date)
-      update_column(:days_visited, 1)
-    end
-
-    unless seen?(date) || has_visit_record?(date)
-      user_visits.create!(visited_at: date)
-      User.update_all('days_visited = days_visited + 1', id: self.id)
     end
   end
 
@@ -434,20 +432,21 @@ class User < ActiveRecord::Base
   end
 
   def bio_excerpt
-    PrettyText.excerpt(bio_cooked, 350)
+    excerpt = PrettyText.excerpt(bio_cooked, 350)
+    return excerpt if excerpt.blank? || has_trust_level?(:basic)
+    PrettyText.strip_links(excerpt)
+  end
+
+  def bio_processed
+    return bio_cooked if bio_cooked.blank? || has_trust_level?(:basic)
+    PrettyText.strip_links(bio_cooked)
   end
 
   def delete_all_posts!(guardian)
     raise Discourse::InvalidAccess unless guardian.can_delete_all_posts? self
 
     posts.order("post_number desc").each do |p|
-      if p.post_number == 1
-        p.topic.trash!
-        # TODO: But the post is not destroyed. Why?
-      else
-        # TODO: This should be using the PostDestroyer!
-        p.trash!
-      end
+      PostDestroyer.new(guardian.user, p).destroy
     end
   end
 
@@ -565,8 +564,21 @@ class User < ActiveRecord::Base
 
   def secure_category_ids
     cats = self.staff? ? Category.select(:id).where(secure: true) : secure_categories.select('categories.id')
-    cats.map{|c| c.id}
+    cats.map{|c| c.id}.sort
   end
+
+  # Flag all posts from a user as spam
+  def flag_linked_posts_as_spam
+    admin = Discourse.system_user
+    topic_links.includes(:post).each do |tl|
+      begin
+        PostAction.act(admin, tl.post, PostActionType.types[:spam])
+      rescue PostAction::AlreadyActed
+        # If the user has already acted, just ignore it
+      end
+    end
+  end
+
 
   protected
 
@@ -651,3 +663,64 @@ class User < ActiveRecord::Base
 
 
 end
+
+# == Schema Information
+#
+# Table name: users
+#
+#  id                            :integer          not null, primary key
+#  username                      :string(20)       not null
+#  created_at                    :datetime         not null
+#  updated_at                    :datetime         not null
+#  name                          :string(255)
+#  bio_raw                       :text
+#  seen_notification_id          :integer          default(0), not null
+#  last_posted_at                :datetime
+#  email                         :string(256)      not null
+#  password_hash                 :string(64)
+#  salt                          :string(32)
+#  active                        :boolean
+#  username_lower                :string(20)       not null
+#  auth_token                    :string(32)
+#  last_seen_at                  :datetime
+#  website                       :string(255)
+#  admin                         :boolean          default(FALSE), not null
+#  last_emailed_at               :datetime
+#  email_digests                 :boolean          default(TRUE), not null
+#  trust_level                   :integer          not null
+#  bio_cooked                    :text
+#  email_private_messages        :boolean          default(TRUE)
+#  email_direct                  :boolean          default(TRUE), not null
+#  approved                      :boolean          default(FALSE), not null
+#  approved_by_id                :integer
+#  approved_at                   :datetime
+#  topics_entered                :integer          default(0), not null
+#  posts_read_count              :integer          default(0), not null
+#  digest_after_days             :integer          default(7), not null
+#  previous_visit_at             :datetime
+#  banned_at                     :datetime
+#  banned_till                   :datetime
+#  date_of_birth                 :date
+#  auto_track_topics_after_msecs :integer
+#  views                         :integer          default(0), not null
+#  flag_level                    :integer          default(0), not null
+#  time_read                     :integer          default(0), not null
+#  days_visited                  :integer          default(0), not null
+#  ip_address                    :string
+#  new_topic_duration_minutes    :integer
+#  external_links_in_new_tab     :boolean          default(FALSE), not null
+#  enable_quoting                :boolean          default(TRUE), not null
+#  moderator                     :boolean          default(FALSE)
+#  likes_given                   :integer          default(0), not null
+#  likes_received                :integer          default(0), not null
+#  topic_reply_count             :integer          default(0), not null
+#
+# Indexes
+#
+#  index_users_on_auth_token      (auth_token)
+#  index_users_on_email           (email) UNIQUE
+#  index_users_on_last_posted_at  (last_posted_at)
+#  index_users_on_username        (username) UNIQUE
+#  index_users_on_username_lower  (username_lower) UNIQUE
+#
+

@@ -2199,3 +2199,4 @@ Handlebars.VM = {
 
 Handlebars.template = Handlebars.VM.template;
 ;
+

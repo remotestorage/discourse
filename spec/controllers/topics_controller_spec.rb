@@ -95,6 +95,49 @@ describe TopicsController do
     end
   end
 
+  context "merge_topic" do
+    it 'needs you to be logged in' do
+      lambda { xhr :post, :merge_topic, topic_id: 111, destination_topic_id: 345 }.should raise_error(Discourse::NotLoggedIn)
+    end
+
+    describe 'moving to a new topic' do
+      let!(:user) { log_in(:moderator) }
+      let(:p1) { Fabricate(:post, user: user) }
+      let(:topic) { p1.topic }
+
+      it "raises an error without destination_topic_id" do
+        lambda { xhr :post, :merge_topic, topic_id: topic.id }.should raise_error(Discourse::InvalidParameters)
+      end
+
+      it "raises an error when the user doesn't have permission to merge" do
+        Guardian.any_instance.expects(:can_move_posts?).returns(false)
+        xhr :post, :merge_topic, topic_id: 111, destination_topic_id: 345
+        response.should be_forbidden
+      end
+
+      let(:dest_topic) { Fabricate(:topic) }
+
+      context 'moves all the posts to the destination topic' do
+        let(:p2) { Fabricate(:post, user: user) }
+
+        before do
+          Topic.any_instance.expects(:move_posts).with(user, [p1.id], destination_topic_id: dest_topic.id).returns(topic)
+          xhr :post, :merge_topic, topic_id: topic.id, destination_topic_id: dest_topic.id
+        end
+
+        it "returns success" do
+          response.should be_success
+          result = ::JSON.parse(response.body)
+          result['success'].should be_true
+          result['url'].should be_present
+        end
+      end
+
+
+    end
+
+  end
+
   context 'similar_to' do
 
     let(:title) { 'this title is long enough to search for' }
@@ -239,12 +282,12 @@ describe TopicsController do
       end
 
       it "changes the user's starred flag when the parameter is present" do
-        Topic.any_instance.expects(:toggle_mute).with(@topic.user, true)
+        Topic.any_instance.expects(:toggle_mute).with(@topic.user)
         xhr :put, :mute, topic_id: @topic.id, starred: 'true'
       end
 
       it "removes the user's starred flag when the parameter is not true" do
-        Topic.any_instance.expects(:toggle_mute).with(@topic.user, false)
+        Topic.any_instance.expects(:toggle_mute).with(@topic.user)
         xhr :put, :unmute, topic_id: @topic.id, starred: 'false'
       end
 
@@ -326,18 +369,18 @@ describe TopicsController do
     let!(:p2) { Fabricate(:post, user: topic.user) }
 
     it 'shows a topic correctly' do
-      xhr :get, :show, id: topic.id
+      xhr :get, :show, topic_id: topic.id, slug: topic.slug
       response.should be_success
     end
 
     it 'records a view' do
-      lambda { xhr :get, :show, id: topic.id }.should change(View, :count).by(1)
+      lambda { xhr :get, :show, topic_id: topic.id, slug: topic.slug }.should change(View, :count).by(1)
     end
 
     it 'tracks a visit for all html requests' do
       current_user = log_in(:coding_horror)
       TopicUser.expects(:track_visit!).with(topic, current_user)
-      get :show, id: topic.id
+      get :show, topic_id: topic.id, slug: topic.slug
     end
 
     context 'consider for a promotion' do
@@ -351,7 +394,7 @@ describe TopicsController do
       it "reviews the user for a promotion if they're new" do
         user.update_column(:trust_level, TrustLevel.levels[:newuser])
         Promotion.any_instance.expects(:review)
-        get :show, id: topic.id
+        get :show, topic_id: topic.id, slug: topic.slug
       end
     end
 
@@ -360,38 +403,57 @@ describe TopicsController do
       it 'grabs first page when no filter is provided' do
         SiteSetting.stubs(:posts_per_page).returns(20)
         TopicView.any_instance.expects(:filter_posts_in_range).with(0, 20)
-        xhr :get, :show, id: topic.id
+        xhr :get, :show, topic_id: topic.id, slug: topic.slug
       end
 
       it 'grabs first page when first page is provided' do
         SiteSetting.stubs(:posts_per_page).returns(20)
         TopicView.any_instance.expects(:filter_posts_in_range).with(0, 20)
-        xhr :get, :show, id: topic.id, page: 1
+        xhr :get, :show, topic_id: topic.id, slug: topic.slug, page: 1
       end
 
       it 'grabs correct range when a page number is provided' do
         SiteSetting.stubs(:posts_per_page).returns(20)
         TopicView.any_instance.expects(:filter_posts_in_range).with(20, 40)
-        xhr :get, :show, id: topic.id, page: 2
+        xhr :get, :show, topic_id: topic.id, slug: topic.slug, page: 2
       end
 
       it 'delegates a post_number param to TopicView#filter_posts_near' do
         TopicView.any_instance.expects(:filter_posts_near).with(p2.post_number)
-        xhr :get, :show, id: topic.id, post_number: p2.post_number
+        xhr :get, :show, topic_id: topic.id, slug: topic.slug, post_number: p2.post_number
       end
 
       it 'delegates a posts_after param to TopicView#filter_posts_after' do
         TopicView.any_instance.expects(:filter_posts_after).with(p1.post_number)
-        xhr :get, :show, id: topic.id, posts_after: p1.post_number
+        xhr :get, :show, topic_id: topic.id, slug: topic.slug, posts_after: p1.post_number
       end
 
       it 'delegates a posts_before param to TopicView#filter_posts_before' do
         TopicView.any_instance.expects(:filter_posts_before).with(p2.post_number)
-        xhr :get, :show, id: topic.id, posts_before: p2.post_number
+        xhr :get, :show, topic_id: topic.id, slug: topic.slug, posts_before: p2.post_number
       end
 
     end
 
+    context "when 'login required' site setting has been enabled" do
+      before { SiteSetting.stubs(:login_required?).returns(true) }
+
+      context 'and the user is logged in' do
+        before { log_in(:coding_horror) }
+
+        it 'shows the topic' do
+          get :show, topic_id: topic.id, slug: topic.slug
+          expect(response).to be_successful
+        end
+      end
+
+      context 'and the user is not logged in' do
+        it 'redirects to the login page' do
+          get :show, topic_id: topic.id, slug: topic.slug
+          expect(response).to redirect_to login_path
+        end
+      end
+    end
   end
 
   describe '#feed' do
@@ -442,6 +504,11 @@ describe TopicsController do
         it 'triggers a change of category' do
           Topic.any_instance.expects(:change_category).with('incredible')
           xhr :put, :update, topic_id: @topic.id, slug: @topic.title, category: 'incredible'
+        end
+
+        it "returns errors with invalid titles" do
+          xhr :put, :update, topic_id: @topic.id, slug: @topic.title, title: 'asdf'
+          expect(response).not_to be_success
         end
 
       end
@@ -512,6 +579,42 @@ describe TopicsController do
 
 
 
+    end
+
+  end
+
+  describe 'autoclose' do
+
+    it 'needs you to be logged in' do
+      lambda { xhr :put, :autoclose, topic_id: 99, auto_close_days: 3}.should raise_error(Discourse::NotLoggedIn)
+    end
+
+    it 'needs you to be an admin or mod' do
+      user = log_in
+      xhr :put, :autoclose, topic_id: 99, auto_close_days: 3
+      response.should be_forbidden
+    end
+
+    describe 'when logged in' do
+      before do
+        @admin = log_in(:admin)
+        @topic = Fabricate(:topic, user: @admin)
+      end
+
+      it "can set a topic's auto close time" do
+        Topic.any_instance.expects(:auto_close_days=).with { |arg| arg.to_i == 3 }
+        xhr :put, :autoclose, topic_id: @topic.id, auto_close_days: 3
+      end
+
+      it "can remove a topic's auto close time" do
+        Topic.any_instance.expects(:auto_close_days=).with(nil)
+        xhr :put, :autoclose, topic_id: @topic.id, auto_close_days: nil
+      end
+
+      it "sets the topic closer to the current user" do
+        Topic.any_instance.expects(:auto_close_user=).with(@admin)
+        xhr :put, :autoclose, topic_id: @topic.id, auto_close_days: nil
+      end
     end
 
   end

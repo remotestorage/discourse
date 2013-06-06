@@ -14,8 +14,6 @@ class CurrentUserSerializer < BasicUserSerializer
              :external_links_in_new_tab,
              :trust_level
 
-  # we probably want to move this into site, but that json is cached so hanging it off current user seems okish
-
   def include_site_flagged_posts_count?
     object.staff?
   end
@@ -25,7 +23,7 @@ class CurrentUserSerializer < BasicUserSerializer
   end
 
   def reply_count
-    object.posts.where("post_number > 1").count
+    object.topic_reply_count
   end
 
   def site_flagged_posts_count

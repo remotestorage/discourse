@@ -7,15 +7,17 @@
   @module Discourse
 **/
 Discourse.AdminUserRoute = Discourse.Route.extend({
-  model: function(params) {
-    return Discourse.AdminUser.find(params.username);
-  },
 
   serialize: function(params) {
     return { username: Em.get(params, 'username').toLowerCase() };
   },
 
+  model: function(params) {
+    return Discourse.AdminUser.find(Em.get(params, 'username').toLowerCase());
+  },
+
   renderTemplate: function() {
-    this.render('admin/templates/user', {into: 'admin/templates/admin'});
+    this.render({into: 'admin/templates/admin'});
   }
+
 });

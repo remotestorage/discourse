@@ -6,7 +6,7 @@
   @namespace Discourse
   @module Discourse
 **/
-Discourse.AdminFlagsController = Ember.Controller.extend({
+Discourse.AdminFlagsController = Ember.ArrayController.extend({
 
   /**
     Clear all flags on a post
@@ -15,12 +15,12 @@ Discourse.AdminFlagsController = Ember.Controller.extend({
     @param {Discourse.FlaggedPost} item The post whose flags we want to clear
   **/
   clearFlags: function(item) {
-    var _this = this;
+    var adminFlagsController = this;
     item.clearFlags().then((function() {
-      _this.content.removeObject(item);
-    }), (function() {
+      adminFlagsController.removeObject(item);
+    }), function() {
       bootbox.alert(Em.String.i18n("admin.flags.error"));
-    }));
+    });
   },
 
   /**
@@ -30,12 +30,12 @@ Discourse.AdminFlagsController = Ember.Controller.extend({
     @param {Discourse.FlaggedPost} item The post to delete
   **/
   deletePost: function(item) {
-    var _this = this;
+    var adminFlagsController = this;
     item.deletePost().then((function() {
-      _this.content.removeObject(item);
-    }), (function() {
+      adminFlagsController.removeObject(item);
+    }), function() {
       bootbox.alert(Em.String.i18n("admin.flags.error"));
-    }));
+    });
   },
 
   /**
@@ -43,17 +43,13 @@ Discourse.AdminFlagsController = Ember.Controller.extend({
 
     @property adminOldFlagsView
   **/
-  adminOldFlagsView: (function() {
-    return this.query === 'old';
-  }).property('query'),
+  adminOldFlagsView: Em.computed.equal('query', 'old'),
 
   /**
     Are we viewing the 'active' view?
 
     @property adminActiveFlagsView
   **/
-  adminActiveFlagsView: (function() {
-    return this.query === 'active';
-  }).property('query')
+  adminActiveFlagsView: Em.computed.equal('query', 'active')
 
 });

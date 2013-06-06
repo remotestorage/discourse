@@ -4,6 +4,7 @@ require_dependency 'rate_limiter'
 require_dependency 'post_revisor'
 require_dependency 'enum'
 require_dependency 'trashable'
+require_dependency 'post_analyzer'
 
 require 'archetype'
 require 'digest/sha1'
@@ -25,6 +26,8 @@ class Post < ActiveRecord::Base
   has_many :replies, through: :post_replies
   has_many :post_actions
 
+  has_one :post_search_data
+
   validates_presence_of :raw, :user_id, :topic_id
   validates :raw, stripped_length: { in: -> { SiteSetting.post_length } }
   validate :raw_quality
@@ -39,13 +42,14 @@ class Post < ActiveRecord::Base
   SHORT_POST_CHARS = 1200
 
   scope :by_newest, order('created_at desc, id desc')
+  scope :by_post_number, order('post_number ASC')
   scope :with_user, includes(:user)
   scope :public_posts, -> { joins(:topic).where('topics.archetype <> ?', Archetype.private_message) }
   scope :private_posts, -> { joins(:topic).where('topics.archetype = ?', Archetype.private_message) }
   scope :with_topic_subtype, ->(subtype) { joins(:topic).where('topics.subtype = ?', subtype) }
 
   def self.hidden_reasons
-    @hidden_reasons ||= Enum.new(:flag_threshold_reached, :flag_threshold_reached_again)
+    @hidden_reasons ||= Enum.new(:flag_threshold_reached, :flag_threshold_reached_again, :new_user_spam_threshold_reached)
   end
 
   def self.types
@@ -85,11 +89,6 @@ class Post < ActiveRecord::Base
     Digest::SHA1.hexdigest(raw.gsub(/\s+/, "").downcase)
   end
 
-  def cooked_document
-    self.cooked ||= cook(raw, topic_id: topic_id)
-    @cooked_document ||= Nokogiri::HTML.fragment(cooked)
-  end
-
   def reset_cooked
     @cooked_document = nil
     self.cooked = nil
@@ -99,31 +98,20 @@ class Post < ActiveRecord::Base
     @white_listed_image_classes ||= ['avatar', 'favicon', 'thumbnail']
   end
 
-  def image_count
-    return 0 unless raw.present?
-
-    cooked_document.search("img").reject do |t|
-      dom_class = t["class"]
-      if dom_class
-        (Post.white_listed_image_classes & dom_class.split(" ")).count > 0
-      end
-    end.count
+  def post_analyzer
+    @post_analyzer = PostAnalyzer.new(raw, topic_id)
   end
 
-  def link_count
-    return 0 unless raw.present?
-
-    # Don't include @mentions in the link count
-    total = 0
-    cooked_document.search("a[href]").each do |l|
-      html_class = l.attributes['class']
-      if html_class.present?
-        next if html_class.to_s == 'mention' && l.attributes['href'].to_s =~ /^\/users\//
-      end
-      total +=1
+  %w{raw_mentions linked_hosts image_count link_count raw_links}.each do |attr|
+    define_method(attr) do
+      PostAnalyzer.new(raw, topic_id).send(attr)
     end
-    total
   end
+
+  def cook(*args)
+    PostAnalyzer.new(raw, topic_id).cook(*args)
+  end
+
 
   # Sometimes the post is being edited by someone else, for example, a mod.
   # If that's the case, they should not be bound by the original poster's
@@ -136,39 +124,47 @@ class Post < ActiveRecord::Base
     @acting_user = pu
   end
 
+  # Ensure maximum amount of mentions in a post
   def max_mention_validator
-    if acting_user.present? && acting_user.has_trust_level?(:basic)
-      errors.add(:base, I18n.t(:too_many_mentions, count: SiteSetting.max_mentions_per_post)) if raw_mentions.size > SiteSetting.max_mentions_per_post
+    if acting_user_is_trusted?
+      add_error_if_count_exceeded(:too_many_mentions, raw_mentions.size, SiteSetting.max_mentions_per_post)
     else
-      errors.add(:base, I18n.t(:too_many_mentions_newuser, count: SiteSetting.newuser_max_mentions_per_post)) if raw_mentions.size > SiteSetting.newuser_max_mentions_per_post
+      add_error_if_count_exceeded(:too_many_mentions_newuser, raw_mentions.size, SiteSetting.newuser_max_mentions_per_post)
     end
   end
 
+  # Ensure new users can not put too many images in a post
   def max_images_validator
-    return if acting_user.present? && acting_user.has_trust_level?(:basic)
-    errors.add(:base, I18n.t(:too_many_images, count: SiteSetting.newuser_max_images)) if image_count > SiteSetting.newuser_max_images
+    add_error_if_count_exceeded(:too_many_images, image_count, SiteSetting.newuser_max_images) unless acting_user_is_trusted?
   end
 
+  # Ensure new users can not put too many links in a post
   def max_links_validator
-    return if acting_user.present? && acting_user.has_trust_level?(:basic)
-    errors.add(:base, I18n.t(:too_many_links, count: SiteSetting.newuser_max_links)) if link_count > SiteSetting.newuser_max_links
+    add_error_if_count_exceeded(:too_many_links, link_count, SiteSetting.newuser_max_links) unless acting_user_is_trusted?
   end
 
+  def total_hosts_usage
+    hosts = linked_hosts.clone
 
-  def raw_mentions
-    return [] if raw.blank?
+    TopicLink.where(domain: hosts.keys, user_id: acting_user.id)
+             .group(:domain, :post_id)
+             .count.keys.each do |tuple|
+      domain = tuple[0]
+      hosts[domain] = (hosts[domain] || 0) + 1
+    end
 
-    # We don't count mentions in quotes
-    return @raw_mentions if @raw_mentions.present?
-    raw_stripped = raw.gsub(/\[quote=(.*)\]([^\[]*?)\[\/quote\]/im, '')
+    hosts
+  end
 
-    # Strip pre and code tags
-    doc = Nokogiri::HTML.fragment(raw_stripped)
-    doc.search("pre").remove
-    doc.search("code").remove
+  # Prevent new users from posting the same hosts too many times.
+  def has_host_spam?
+    return false if acting_user.present? && acting_user.has_trust_level?(:basic)
 
-    results = doc.to_html.scan(PrettyText.mention_matcher)
-    @raw_mentions = results.uniq.map { |un| un.first.downcase.gsub!(/^@/, '') }
+    total_hosts_usage.each do |host, count|
+      return true if count >= SiteSetting.newuser_spam_host_threshold
+    end
+
+    false
   end
 
   def archetype
@@ -236,20 +232,6 @@ class Post < ActiveRecord::Base
     Post.excerpt(cooked, maxlength, options)
   end
 
-  # What we use to cook posts
-  def cook(*args)
-    cooked = PrettyText.cook(*args)
-
-    # If we have any of the oneboxes in the cache, throw them in right away, don't
-    # wait for the post processor.
-    dirty = false
-    result = Oneboxer.apply(cooked) do |url, elem|
-      Oneboxer.render_from_cache(url)
-    end
-
-    cooked = result.to_html if result.changed?
-    cooked
-  end
 
   # A list of versions including the initial version
   def all_versions
@@ -261,6 +243,10 @@ class Post < ActiveRecord::Base
       end
     end
     result
+  end
+
+  def is_first_post?
+    post_number == 1
   end
 
   def is_flagged?
@@ -323,6 +309,8 @@ class Post < ActiveRecord::Base
   # TODO: Move some of this into an asynchronous job?
   # TODO: Move into PostCreator
   after_create do
+
+    Rails.logger.info (">" * 30) + "#{no_bump} #{created_at}"
     # Update attributes on the topic - featured users and last posted.
     attrs = {last_posted_at: created_at, last_post_user_id: user_id}
     attrs[:bumped_at] = created_at unless no_bump
@@ -366,47 +354,32 @@ class Post < ActiveRecord::Base
     DraftSequence.next!(last_editor_id, topic.draft_key)
   end
 
+
   # Determine what posts are quoted by this post
   def extract_quoted_post_numbers
-    self.quoted_post_numbers = []
+    temp_collector = []
 
     # Create relationships for the quotes
-    raw.scan(/\[quote=\"([^"]+)"\]/).each do |m|
-      if m.present?
-        args = {}
-        m.first.scan(/([a-z]+)\:(\d+)/).each do |arg|
-          args[arg[0].to_sym] = arg[1].to_i
-        end
-
-        if args[:topic].present?
-          # If the topic attribute is present, ensure it's the same topic
-          self.quoted_post_numbers << args[:post] if topic_id == args[:topic]
-        else
-          self.quoted_post_numbers << args[:post]
-        end
-
-      end
+    raw.scan(/\[quote=\"([^"]+)"\]/).each do |quote|
+      args = parse_quote_into_arguments(quote)
+      # If the topic attribute is present, ensure it's the same topic
+      temp_collector << args[:post] unless (args[:topic].present? && topic_id != args[:topic])
     end
 
-    self.quoted_post_numbers.uniq!
-    self.quote_count = quoted_post_numbers.size
+    temp_collector.uniq!
+    self.quoted_post_numbers = temp_collector
+    self.quote_count = temp_collector.size
   end
 
+
   def save_reply_relationships
-    self.quoted_post_numbers ||= []
-    self.quoted_post_numbers << reply_to_post_number if reply_to_post_number.present?
+    add_to_quoted_post_numbers(reply_to_post_number)
+    return if self.quoted_post_numbers.blank?
 
     # Create a reply relationship between quoted posts and this new post
-    if self.quoted_post_numbers.present?
-      self.quoted_post_numbers.map(&:to_i).uniq.each do |p|
-        post = Post.where(topic_id: topic_id, post_number: p).first
-        if post.present?
-          post_reply = post.post_replies.new(reply_id: id)
-          if post_reply.save
-            Post.update_all ['reply_count = reply_count + 1'], id: post.id
-          end
-        end
-      end
+    self.quoted_post_numbers.each do |p|
+      post = Post.where(topic_id: topic_id, post_number: p).first
+      create_reply_relationship_with(post)
     end
   end
 
@@ -425,4 +398,85 @@ class Post < ActiveRecord::Base
   def self.private_messages_count_per_day(since_days_ago, topic_subtype)
     private_posts.with_topic_subtype(topic_subtype).where('posts.created_at > ?', since_days_ago.days.ago).group('date(posts.created_at)').order('date(posts.created_at)').count
   end
+
+  private
+
+  def acting_user_is_trusted?
+    acting_user.present? && acting_user.has_trust_level?(:basic)
+  end
+
+  def add_error_if_count_exceeded(key_for_translation, current_count, max_count)
+    errors.add(:base, I18n.t(key_for_translation, count: max_count)) if current_count > max_count
+  end
+
+  def parse_quote_into_arguments(quote)
+    return {} unless quote.present?
+    args = {}
+    quote.first.scan(/([a-z]+)\:(\d+)/).each do |arg|
+      args[arg[0].to_sym] = arg[1].to_i
+    end
+    args
+  end
+
+  def add_to_quoted_post_numbers(num)
+    return unless num.present?
+    self.quoted_post_numbers ||= []
+    self.quoted_post_numbers << num
+  end
+
+  def create_reply_relationship_with(post)
+    return if post.nil?
+    post_reply = post.post_replies.new(reply_id: id)
+    if post_reply.save
+      Post.update_all ['reply_count = reply_count + 1'], id: post.id
+    end
+  end
 end
+
+# == Schema Information
+#
+# Table name: posts
+#
+#  id                      :integer          not null, primary key
+#  user_id                 :integer          not null
+#  topic_id                :integer          not null
+#  post_number             :integer          not null
+#  raw                     :text             not null
+#  cooked                  :text             not null
+#  created_at              :datetime         not null
+#  updated_at              :datetime         not null
+#  reply_to_post_number    :integer
+#  cached_version          :integer          default(1), not null
+#  reply_count             :integer          default(0), not null
+#  quote_count             :integer          default(0), not null
+#  deleted_at              :datetime
+#  off_topic_count         :integer          default(0), not null
+#  like_count              :integer          default(0), not null
+#  incoming_link_count     :integer          default(0), not null
+#  bookmark_count          :integer          default(0), not null
+#  avg_time                :integer
+#  score                   :float
+#  reads                   :integer          default(0), not null
+#  post_type               :integer          default(1), not null
+#  vote_count              :integer          default(0), not null
+#  sort_order              :integer
+#  last_editor_id          :integer
+#  hidden                  :boolean          default(FALSE), not null
+#  hidden_reason_id        :integer
+#  notify_moderators_count :integer          default(0), not null
+#  spam_count              :integer          default(0), not null
+#  illegal_count           :integer          default(0), not null
+#  inappropriate_count     :integer          default(0), not null
+#  last_version_at         :datetime         not null
+#  user_deleted            :boolean          default(FALSE), not null
+#  reply_to_user_id        :integer
+#  percent_rank            :float            default(1.0)
+#  notify_user_count       :integer          default(0), not null
+#
+# Indexes
+#
+#  idx_posts_user_id_deleted_at             (user_id)
+#  index_posts_on_reply_to_post_number      (reply_to_post_number)
+#  index_posts_on_topic_id_and_post_number  (topic_id,post_number) UNIQUE
+#
+

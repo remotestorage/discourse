@@ -36,10 +36,14 @@ class PostsController < ApplicationController
                                    target_usernames: params[:target_usernames],
                                    reply_to_post_number: params[:post][:reply_to_post_number],
                                    image_sizes: params[:image_sizes],
-                                   meta_data: params[:meta_data])
+                                   meta_data: params[:meta_data],
+                                   auto_close_days: params[:auto_close_days])
     post = post_creator.create
-
     if post_creator.errors.present?
+
+      # If the post was spam, flag all the user's posts as spam
+      current_user.flag_linked_posts_as_spam if post_creator.spam?
+
       render_json_error(post_creator)
     else
       post_serializer = PostSerializer.new(post, scope: guardian, root: false)
@@ -86,7 +90,7 @@ class PostsController < ApplicationController
 
     post_serializer = PostSerializer.new(post, scope: guardian, root: false)
     post_serializer.draft_sequence = DraftSequence.current(current_user, post.topic.draft_key)
-    link_counts = TopicLinkClick.counts_for(post.topic, [post])
+    link_counts = TopicLink.counts_for(guardian,post.topic, [post])
     post_serializer.single_post_link_counts = link_counts[post.id] if link_counts.present?
     post_serializer.topic_slug = post.topic.slug if post.topic.present?
 
